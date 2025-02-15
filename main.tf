@@ -40,6 +40,14 @@ resource "aws_internet_gateway" "gw" {
   tags = var.tags
 }
 */
+
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id       = aws_vpc.main.id
+  service_name   = "com.amazonaws.${var.region}.s3"
+
+  tags = var.tags
+}
+
 resource "aws_route_table" "rt" {
   vpc_id = aws_vpc.main.id
 
@@ -81,9 +89,3 @@ resource "aws_s3_bucket" "static_website" {
   tags = var.tags
 }
 
-resource "aws_vpc_endpoint" "s3" {
-  vpc_id       = aws_vpc.main.id
-  service_name   = "com.amazonaws.${var.region}.s3"
-
-  tags = var.tags
-}

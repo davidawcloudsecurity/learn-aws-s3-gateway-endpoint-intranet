@@ -77,12 +77,19 @@ resource "aws_s3_bucket" "static_website" {
   bucket = "static-website-${var.tags["Environment"]}-${random_id.bucket_suffix.hex}"
   acl    = "private"
 
-  website {
-    index_document = "index.html"
-    error_document = "error.html"
+  tags = var.tags
+}
+
+resource "aws_s3_bucket_website_configuration" "static_website_configuration" {
+  bucket = aws_s3_bucket.static_website.bucket
+
+  index_document {
+    suffix = "index.html"
   }
 
-  tags = var.tags
+  error_document {
+    key = "error.html"
+  }
 }
 
 output "s3_bucket_name" {

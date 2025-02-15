@@ -5,6 +5,7 @@ provider "aws" {
 variable "region" {
   description = "The region for the account"
   type        = string
+  default     = "us-east-1"
 }
 
 variable "vpc_cidr_block" {

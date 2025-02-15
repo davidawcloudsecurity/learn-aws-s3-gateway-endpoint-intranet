@@ -1,19 +1,19 @@
 {
   "version": 4,
   "terraform_version": "1.3.0",
-  "serial": 9,
-  "lineage": "4664aef1-f533-553d-0a66-6aa4b8937df2",
+  "serial": 12,
+  "lineage": "750f0484-4133-8485-b39e-4c40b8f646e6",
   "outputs": {
     "s3_bucket_name": {
-      "value": "static-website-dev-79877bdf",
+      "value": "static-website-dev-4c8367cd",
       "type": "string"
     },
     "subnet_id": {
-      "value": "subnet-0ca1f5a2440341584",
+      "value": "subnet-023ec253b50ec7165",
       "type": "string"
     },
     "vpc_id": {
-      "value": "vpc-0d52eb5ce588ea381",
+      "value": "vpc-0ec7a4af98072e7ea",
       "type": "string"
     }
   },
@@ -27,8 +27,8 @@
         {
           "schema_version": 0,
           "attributes": {
-            "arn": "arn:aws:ec2:us-east-1:626635428534:route-table/rtb-042dc78a3b284da92",
-            "id": "rtb-042dc78a3b284da92",
+            "arn": "arn:aws:ec2:us-east-1:626635428534:route-table/rtb-08d2208df769fe934",
+            "id": "rtb-08d2208df769fe934",
             "owner_id": "626635428534",
             "propagating_vgws": [],
             "route": [],
@@ -41,7 +41,7 @@
               "Project": "s3-gateway-endpoint"
             },
             "timeouts": null,
-            "vpc_id": "vpc-0d52eb5ce588ea381"
+            "vpc_id": "vpc-0ec7a4af98072e7ea"
           },
           "sensitive_attributes": [],
           "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjozMDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJ1cGRhdGUiOjEyMDAwMDAwMDAwMH19",
@@ -61,9 +61,9 @@
           "schema_version": 0,
           "attributes": {
             "gateway_id": "",
-            "id": "rtbassoc-07f1d815eac2a69dc",
-            "route_table_id": "rtb-042dc78a3b284da92",
-            "subnet_id": "subnet-0ca1f5a2440341584",
+            "id": "rtbassoc-0a70b8c4bea188150",
+            "route_table_id": "rtb-08d2208df769fe934",
+            "subnet_id": "subnet-023ec253b50ec7165",
             "timeouts": null
           },
           "sensitive_attributes": [],
@@ -86,12 +86,12 @@
           "schema_version": 0,
           "attributes": {
             "acceleration_status": "",
-            "acl": "private",
-            "arn": "arn:aws:s3:::static-website-dev-79877bdf",
-            "bucket": "static-website-dev-79877bdf",
-            "bucket_domain_name": "static-website-dev-79877bdf.s3.amazonaws.com",
+            "acl": null,
+            "arn": "arn:aws:s3:::static-website-dev-4c8367cd",
+            "bucket": "static-website-dev-4c8367cd",
+            "bucket_domain_name": "static-website-dev-4c8367cd.s3.amazonaws.com",
             "bucket_prefix": "",
-            "bucket_regional_domain_name": "static-website-dev-79877bdf.s3.us-east-1.amazonaws.com",
+            "bucket_regional_domain_name": "static-website-dev-4c8367cd.s3.us-east-1.amazonaws.com",
             "cors_rule": [],
             "force_destroy": false,
             "grant": [
@@ -105,7 +105,7 @@
               }
             ],
             "hosted_zone_id": "Z3AQBSTGFYJSTF",
-            "id": "static-website-dev-79877bdf",
+            "id": "static-website-dev-4c8367cd",
             "lifecycle_rule": [],
             "logging": [],
             "object_lock_configuration": [],
@@ -158,6 +158,106 @@
     },
     {
       "mode": "managed",
+      "type": "aws_s3_bucket_acl",
+      "name": "example",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "access_control_policy": [
+              {
+                "grant": [
+                  {
+                    "grantee": [
+                      {
+                        "display_name": "newbietofx+foabdavidaw2-stag",
+                        "email_address": "",
+                        "id": "fd4e71534036d558c71babcfacb4c922d53690fbaa07b2a4ddfcff5d964b023c",
+                        "type": "CanonicalUser",
+                        "uri": ""
+                      }
+                    ],
+                    "permission": "FULL_CONTROL"
+                  }
+                ],
+                "owner": [
+                  {
+                    "display_name": "newbietofx+foabdavidaw2-stag",
+                    "id": "fd4e71534036d558c71babcfacb4c922d53690fbaa07b2a4ddfcff5d964b023c"
+                  }
+                ]
+              }
+            ],
+            "acl": "private",
+            "bucket": "static-website-dev-4c8367cd",
+            "expected_bucket_owner": "",
+            "id": "static-website-dev-4c8367cd,private"
+          },
+          "sensitive_attributes": [],
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_s3_bucket.static_website",
+            "aws_s3_bucket_ownership_controls.example",
+            "aws_s3_bucket_public_access_block.example",
+            "random_id.bucket_suffix"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_s3_bucket_ownership_controls",
+      "name": "example",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "bucket": "static-website-dev-4c8367cd",
+            "id": "static-website-dev-4c8367cd",
+            "rule": [
+              {
+                "object_ownership": "BucketOwnerPreferred"
+              }
+            ]
+          },
+          "sensitive_attributes": [],
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_s3_bucket.static_website",
+            "random_id.bucket_suffix"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_s3_bucket_public_access_block",
+      "name": "example",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "block_public_acls": true,
+            "block_public_policy": true,
+            "bucket": "static-website-dev-4c8367cd",
+            "id": "static-website-dev-4c8367cd",
+            "ignore_public_acls": true,
+            "restrict_public_buckets": true
+          },
+          "sensitive_attributes": [],
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_s3_bucket.static_website",
+            "random_id.bucket_suffix"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
       "type": "aws_s3_bucket_website_configuration",
       "name": "static_website_configuration",
       "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
@@ -165,14 +265,14 @@
         {
           "schema_version": 0,
           "attributes": {
-            "bucket": "static-website-dev-79877bdf",
+            "bucket": "static-website-dev-4c8367cd",
             "error_document": [
               {
                 "key": "error.html"
               }
             ],
             "expected_bucket_owner": "",
-            "id": "static-website-dev-79877bdf",
+            "id": "static-website-dev-4c8367cd",
             "index_document": [
               {
                 "suffix": "index.html"
@@ -182,7 +282,7 @@
             "routing_rule": [],
             "routing_rules": "",
             "website_domain": "s3-website-us-east-1.amazonaws.com",
-            "website_endpoint": "static-website-dev-79877bdf.s3-website-us-east-1.amazonaws.com"
+            "website_endpoint": "static-website-dev-4c8367cd.s3-website-us-east-1.amazonaws.com"
           },
           "sensitive_attributes": [],
           "private": "bnVsbA==",
@@ -202,17 +302,17 @@
         {
           "schema_version": 1,
           "attributes": {
-            "arn": "arn:aws:ec2:us-east-1:626635428534:subnet/subnet-0ca1f5a2440341584",
+            "arn": "arn:aws:ec2:us-east-1:626635428534:subnet/subnet-023ec253b50ec7165",
             "assign_ipv6_address_on_creation": false,
-            "availability_zone": "us-east-1a",
-            "availability_zone_id": "use1-az4",
+            "availability_zone": "us-east-1b",
+            "availability_zone_id": "use1-az6",
             "cidr_block": "192.168.1.0/24",
             "customer_owned_ipv4_pool": "",
             "enable_dns64": false,
             "enable_lni_at_device_index": 0,
             "enable_resource_name_dns_a_record_on_launch": false,
             "enable_resource_name_dns_aaaa_record_on_launch": false,
-            "id": "subnet-0ca1f5a2440341584",
+            "id": "subnet-023ec253b50ec7165",
             "ipv6_cidr_block": "",
             "ipv6_cidr_block_association_id": "",
             "ipv6_native": false,
@@ -232,7 +332,7 @@
               "Project": "s3-gateway-endpoint"
             },
             "timeouts": null,
-            "vpc_id": "vpc-0d52eb5ce588ea381"
+            "vpc_id": "vpc-0ec7a4af98072e7ea"
           },
           "sensitive_attributes": [],
           "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
@@ -251,17 +351,17 @@
         {
           "schema_version": 1,
           "attributes": {
-            "arn": "arn:aws:ec2:us-east-1:626635428534:vpc/vpc-0d52eb5ce588ea381",
+            "arn": "arn:aws:ec2:us-east-1:626635428534:vpc/vpc-0ec7a4af98072e7ea",
             "assign_generated_ipv6_cidr_block": false,
             "cidr_block": "192.168.0.0/16",
-            "default_network_acl_id": "acl-0e1507e9fb8041639",
-            "default_route_table_id": "rtb-0ce497669eeb88326",
-            "default_security_group_id": "sg-0ceacec0f48b59966",
-            "dhcp_options_id": "dopt-0277d9ab0b251565f",
+            "default_network_acl_id": "acl-05031c585bcde48fc",
+            "default_route_table_id": "rtb-023ef736a0708d19b",
+            "default_security_group_id": "sg-0db3eae2fde3cb408",
+            "dhcp_options_id": "dopt-084eb0f7e440aabbd",
             "enable_dns_hostnames": false,
             "enable_dns_support": true,
             "enable_network_address_usage_metrics": false,
-            "id": "vpc-0d52eb5ce588ea381",
+            "id": "vpc-0ec7a4af98072e7ea",
             "instance_tenancy": "default",
             "ipv4_ipam_pool_id": null,
             "ipv4_netmask_length": null,
@@ -270,7 +370,7 @@
             "ipv6_cidr_block_network_border_group": "",
             "ipv6_ipam_pool_id": "",
             "ipv6_netmask_length": 0,
-            "main_route_table_id": "rtb-0ce497669eeb88326",
+            "main_route_table_id": "rtb-023ef736a0708d19b",
             "owner_id": "626635428534",
             "tags": {
               "Environment": "dev",
@@ -297,7 +397,7 @@
         {
           "schema_version": 0,
           "attributes": {
-            "arn": "arn:aws:ec2:us-east-1:626635428534:vpc-endpoint/vpce-079fe0512707d8a15",
+            "arn": "arn:aws:ec2:us-east-1:626635428534:vpc-endpoint/vpce-033c08d96ec0e58e2",
             "auto_accept": null,
             "cidr_blocks": [
               "16.15.176.0/20",
@@ -311,7 +411,7 @@
             ],
             "dns_entry": [],
             "dns_options": [],
-            "id": "vpce-079fe0512707d8a15",
+            "id": "vpce-033c08d96ec0e58e2",
             "ip_address_type": "",
             "network_interface_ids": [],
             "owner_id": "626635428534",
@@ -321,7 +421,7 @@
             "requester_managed": false,
             "resource_configuration_arn": "",
             "route_table_ids": [
-              "rtb-042dc78a3b284da92"
+              "rtb-08d2208df769fe934"
             ],
             "security_group_ids": [],
             "service_name": "com.amazonaws.us-east-1.s3",
@@ -340,7 +440,7 @@
             },
             "timeouts": null,
             "vpc_endpoint_type": "Gateway",
-            "vpc_id": "vpc-0d52eb5ce588ea381"
+            "vpc_id": "vpc-0ec7a4af98072e7ea"
           },
           "sensitive_attributes": [],
           "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
@@ -360,12 +460,12 @@
         {
           "schema_version": 0,
           "attributes": {
-            "b64_std": "eYd73w==",
-            "b64_url": "eYd73w",
+            "b64_std": "TINnzQ==",
+            "b64_url": "TINnzQ",
             "byte_length": 4,
-            "dec": "2038922207",
-            "hex": "79877bdf",
-            "id": "eYd73w",
+            "dec": "1283680205",
+            "hex": "4c8367cd",
+            "id": "TINnzQ",
             "keepers": null,
             "prefix": null
           },

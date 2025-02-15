@@ -75,9 +75,34 @@ resource "random_id" "bucket_suffix" {
 
 resource "aws_s3_bucket" "static_website" {
   bucket = "static-website-${var.tags["Environment"]}-${random_id.bucket_suffix.hex}"
-  acl    = "private"
 
   tags = var.tags
+}
+
+resource "aws_s3_bucket_ownership_controls" "example" {
+  bucket = aws_s3_bucket.static_website.id
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "example" {
+  bucket = aws_s3_bucket.static_website.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
+resource "aws_s3_bucket_acl" "example" {
+  depends_on = [
+    aws_s3_bucket_ownership_controls.example,
+    aws_s3_bucket_public_access_block.example,
+  ]
+
+  bucket = aws_s3_bucket.static_website.id
+  acl    = "private"
 }
 
 resource "aws_s3_bucket_website_configuration" "static_website_configuration" {

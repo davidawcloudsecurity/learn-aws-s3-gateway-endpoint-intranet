@@ -75,13 +75,9 @@ resource "random_id" "bucket_suffix" {
 
 resource "aws_s3_bucket" "static_website" {
   bucket = "static-website-${var.tags["Environment"]}-${random_id.bucket_suffix.hex}"
+  acl    = "private"
 
   tags = var.tags
-}
-
-resource "aws_s3_bucket_acl" "static_website_acl" {
-  bucket = aws_s3_bucket.static_website.bucket
-  acl    = "private"
 }
 
 resource "aws_s3_bucket_website_configuration" "static_website_configuration" {

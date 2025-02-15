@@ -50,6 +50,7 @@ resource "aws_route_table" "rt" {
   }
 
   tags = var.tags
+  depends_on = [aws_vpc_endpoint.s3]
 }
 
 resource "aws_route_table_association" "a" {

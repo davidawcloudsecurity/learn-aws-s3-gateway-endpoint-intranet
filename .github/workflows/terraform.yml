@@ -61,7 +61,7 @@ jobs:
           git merge origin/destroy/main
           mv main.tf.origin main.tf
           mv terraform.tfstate state
-          git add state main.tf variables.tf
+          git add state main.tf
           git commit -m "random-${COMMIT_HASH}"
           # Push the changes to the 'destroy/main' branch
           git push origin destroy/main

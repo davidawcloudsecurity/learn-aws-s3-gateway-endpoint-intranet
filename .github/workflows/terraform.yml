@@ -1,4 +1,4 @@
-name: "learn-aws-wordpress-ec2-apply"
+name: "learn-s3-gateway-endpoint-intranet"
 
 on:
   workflow_dispatch:

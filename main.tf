@@ -51,6 +51,8 @@ resource "aws_vpc_endpoint" "s3" {
   service_name = "com.amazonaws.${var.region}.s3"
 
   tags = var.tags
+
+  depends_on = [aws_vpc.main]  # Ensure VPC is created before the endpoint
 }
 
 resource "aws_route_table" "rt" {
@@ -62,6 +64,8 @@ resource "aws_route_table" "rt" {
   }
 
   tags = var.tags
+
+  depends_on = [aws_vpc_endpoint.s3]  # Ensure VPC endpoint is created before the route table
 }
 
 resource "aws_route_table_association" "a" {

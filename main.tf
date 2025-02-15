@@ -46,7 +46,7 @@ resource "aws_route_table" "rt" {
   route {
     cidr_block = "0.0.0.0/0"
     # gateway_id = aws_internet_gateway.gw.id
-    vpc_endpoint_id = aws_vpc_endpoint.s3
+    vpc_endpoint_id = aws_vpc_endpoint.s3.id
   }
 
   tags = var.tags

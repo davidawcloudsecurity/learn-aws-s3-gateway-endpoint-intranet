@@ -2,11 +2,11 @@ provider "aws" {
   region = var.region
 }
 
-variable region {
+variable "region" {
   description = "The region for the account"
   type        = string
-  default     = "us-east-1"
 }
+
 variable "vpc_cidr_block" {
   description = "The CIDR block for the VPC"
   type        = string
@@ -31,24 +31,23 @@ variable "tags" {
 resource "aws_vpc" "main" {
   cidr_block = var.vpc_cidr_block
 
-  tags = var.tags
+  tags = merge(var.tags, {
+    Name = "vpc-${var.tags["Environment"]}"
+  })
 }
-/*
-resource "aws_internet_gateway" "gw" {
-  vpc_id = aws_vpc.main.id
 
-  tags = var.tags
-}
-*/
+resource "aws_subnet" "main" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block = var.public_subnet_cidr_block
 
-data "aws_vpc_endpoint_service" "s3" {
-  service = "s3"
+  tags = merge(var.tags, {
+    Name = "subnet-${var.tags["Environment"]}"
+  })
 }
 
 resource "aws_vpc_endpoint" "s3" {
-  vpc_id          = aws_vpc.main.id
-  service_name    = data.aws_vpc_endpoint_service.s3.service_name
-  route_table_ids = [aws_route_table.rt.id]
+  vpc_id       = aws_vpc.main.id
+  service_name = "com.amazonaws.${var.region}.s3"
 
   tags = var.tags
 }
@@ -57,27 +56,16 @@ resource "aws_route_table" "rt" {
   vpc_id = aws_vpc.main.id
 
   route {
-    cidr_block = "0.0.0.0/0"
-    # gateway_id = aws_internet_gateway.gw.id
+    cidr_block      = "0.0.0.0/0"
     vpc_endpoint_id = aws_vpc_endpoint.s3.id
   }
 
   tags = var.tags
-  depends_on = [aws_vpc_endpoint.s3]
 }
 
 resource "aws_route_table_association" "a" {
   subnet_id      = aws_subnet.main.id
   route_table_id = aws_route_table.rt.id
-
-  depends_on = [aws_subnet.main]  # Ensure subnet is created before association
-}
-
-resource "aws_subnet" "main" {
-  vpc_id     = aws_vpc.main.id
-  cidr_block = var.public_subnet_cidr_block
-
-  tags = var.tags
 }
 
 resource "random_id" "bucket_suffix" {
@@ -97,18 +85,16 @@ resource "aws_s3_bucket" "static_website" {
 }
 
 output "s3_bucket_name" {
-  value = aws_s3_bucket.static_website.bucket
+  value       = aws_s3_bucket.static_website.bucket
   description = "The name of the S3 static website bucket"
 }
 
 output "vpc_id" {
-  value = aws_vpc.main.id
+  value       = aws_vpc.main.id
   description = "The ID of the VPC"
 }
 
 output "subnet_id" {
-  value = aws_subnet.main.id
+  value       = aws_subnet.main.id
   description = "The ID of the main subnet"
 }
-
-

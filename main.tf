@@ -1,9 +1,10 @@
 provider "aws" {
+  # make this variable
   region = "us-east-1"
 }
 
 resource "aws_vpc" "main" {
-  # Make this variable
+  # make this variable
   cidr_block = "10.0.0.0/16"
 
   tags = {
@@ -39,6 +40,7 @@ resource "aws_route_table_association" "a" {
 
 resource "aws_subnet" "main" {
   vpc_id     = aws_vpc.main.id
+  # Make this variable
   cidr_block = "10.0.1.0/24"
 
   tags = {
@@ -47,6 +49,7 @@ resource "aws_subnet" "main" {
 }
 
 resource "aws_s3_bucket" "static_website" {
+  # make this variable
   bucket = "my-static-website-bucket"
   acl    = "private"
 

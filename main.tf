@@ -96,3 +96,19 @@ resource "aws_s3_bucket" "static_website" {
   tags = var.tags
 }
 
+output "s3_bucket_name" {
+  value = aws_s3_bucket.static_website.bucket
+  description = "The name of the S3 static website bucket"
+}
+
+output "vpc_id" {
+  value = aws_vpc.main.id
+  description = "The ID of the VPC"
+}
+
+output "subnet_id" {
+  value = aws_subnet.main.id
+  description = "The ID of the main subnet"
+}
+
+

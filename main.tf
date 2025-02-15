@@ -63,8 +63,12 @@ resource "aws_subnet" "main" {
   tags = var.tags
 }
 
+resource "random_id" "bucket_suffix" {
+  byte_length = 4
+}
+
 resource "aws_s3_bucket" "static_website" {
-  bucket = "my-static-website-bucket"
+  bucket = "my-static-website-bucket-${random_id.bucket_suffix.hex}"
   acl    = "private"
 
   website {

@@ -71,7 +71,7 @@ jobs:
       - name: Terraform Destroy on Failure
         if: failure()
         run: |
-          terraform destroy -var-file=terraform.tfvars.json -auto-approve -input=false
+          terraform destroy -auto-approve
           echo "Check if AmazonSSMManagedInstanceRole exist"
           if [ -n "$(aws iam list-roles --query 'Roles[*].RoleName' | grep AmazonSSMManagedInstanceRole | sed 's/[",]//g')" ]; then
             aws iam delete-role --role-name $(aws iam list-roles --query 'Roles[*].RoleName' | grep AmazonSSMManagedInstanceRole | sed 's/[",]//g')

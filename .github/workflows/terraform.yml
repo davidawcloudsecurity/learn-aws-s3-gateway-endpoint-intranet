@@ -12,7 +12,7 @@ env:
 
 jobs:
   terraform:
-    name: "learn-aws-wordpress-ec2"
+    name: "learn-aws-s3-gateway-endpoint-intranet"
     runs-on: ubuntu-latest
     permissions:
       contents: write

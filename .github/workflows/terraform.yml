@@ -35,7 +35,7 @@ jobs:
           ls -lah
           pwd
           ls -lah state
-          mv state/terraform.tfstate ./terraform.tfstate
+          mv state terraform.tfstate
           ls -lah
           echo "Terraform init"
           echo ""
@@ -51,7 +51,7 @@ jobs:
       
       - name: Terraform Destroy Targeted Resources
         run: |
-          terraform destroy -var-file="terraform.tfvars.json" -auto-approve -input=false
+          terraform destroy -auto-approve
           if [ -n "$(aws iam list-roles --query 'Roles[*].RoleName' | grep AmazonSSMManagedInstanceRole | sed 's/[",]//g')" ]; then
             aws iam delete-role --role-name "$(aws iam list-roles --query 'Roles[*].RoleName' | grep AmazonSSMManagedInstanceRole | sed 's/[",]//g')"
           fi

@@ -49,6 +49,7 @@ resource "aws_subnet" "main" {
 resource "aws_vpc_endpoint" "s3" {
   vpc_id       = aws_vpc.main.id
   service_name = "com.amazonaws.${var.region}.s3"
+  route_table_ids   = [aws_route_table.rt.id] # This is where the association happens
 
   tags = var.tags
 
@@ -58,14 +59,7 @@ resource "aws_vpc_endpoint" "s3" {
 resource "aws_route_table" "rt" {
   vpc_id = aws_vpc.main.id
 
-  route {
-    vpc_endpoint_id         = aws_vpc_endpoint.s3.id
-    destination_prefix_list_id = aws_vpc_endpoint.s3.prefix_list_id
-  }
-
   tags = var.tags
-
-  depends_on = [aws_vpc_endpoint.s3]  # Ensure VPC endpoint is created before the route table
 }
 
 resource "aws_route_table_association" "a" {

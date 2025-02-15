@@ -41,10 +41,14 @@ resource "aws_internet_gateway" "gw" {
 }
 */
 
+data "aws_vpc_endpoint_service" "s3" {
+  service = "s3"
+}
+
 resource "aws_vpc_endpoint" "s3" {
-  vpc_id       = aws_vpc.main.id
-  service_name   = "com.amazonaws.${var.region}.s3"
-  route_table_ids   = [aws_route_table.rt.id]
+  vpc_id          = aws_vpc.main.id
+  service_name    = data.aws_vpc_endpoint_service.s3.service_name
+  route_table_ids = [aws_route_table.rt.id]
 
   tags = var.tags
 }

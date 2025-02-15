@@ -61,7 +61,7 @@ jobs:
 
       - name: Clean tfstate and Git
         run: |
-          echo "" > state/terraform.tfstate
+          echo "" > terraform.tfstate
           mv terraform.tfstate state                    
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

@@ -23,7 +23,7 @@ variable "public_subnet_cidr_block" {
 variable "tags" {
   description = "A map of tags to assign to the resources"
   type        = map(string)
-  default     = {
+  default = {
     Environment = "dev"
     Project     = "s3-gateway-endpoint"
   }
@@ -47,13 +47,13 @@ resource "aws_subnet" "main" {
 }
 
 resource "aws_vpc_endpoint" "s3" {
-  vpc_id       = aws_vpc.main.id
-  service_name = "com.amazonaws.${var.region}.s3"
-  route_table_ids   = [aws_route_table.rt.id] # This is where the association happens
+  vpc_id          = aws_vpc.main.id
+  service_name    = "com.amazonaws.${var.region}.s3"
+  route_table_ids = [aws_route_table.rt.id] # This is where the association happens
 
   tags = var.tags
 
-  depends_on = [aws_vpc.main]  # Ensure VPC is created before the endpoint
+  depends_on = [aws_vpc.main] # Ensure VPC is created before the endpoint
 }
 
 resource "aws_route_table" "rt" {
@@ -66,7 +66,7 @@ resource "aws_route_table_association" "a" {
   subnet_id      = aws_subnet.main.id
   route_table_id = aws_route_table.rt.id
 
-  depends_on = [aws_route_table.rt]  # Ensure the route table is created before association
+  depends_on = [aws_route_table.rt] # Ensure the route table is created before association
 }
 
 resource "random_id" "bucket_suffix" {
@@ -77,12 +77,19 @@ resource "aws_s3_bucket" "static_website" {
   bucket = "static-website-${var.tags["Environment"]}-${random_id.bucket_suffix.hex}"
   acl    = "private"
 
-  website {
-    index_document = "index.html"
-    error_document = "error.html"
+  tags = var.tags
+}
+
+resource "aws_s3_bucket_website_configuration" "static_website_configuration" {
+  bucket = aws_s3_bucket.static_website.bucket
+
+  index_document {
+    suffix = "index.html"
   }
 
-  tags = var.tags
+  error_document {
+    key = "error.html"
+  }
 }
 
 output "s3_bucket_name" {

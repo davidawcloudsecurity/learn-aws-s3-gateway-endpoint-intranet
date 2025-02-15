@@ -69,6 +69,8 @@ resource "aws_route_table" "rt" {
 resource "aws_route_table_association" "a" {
   subnet_id      = aws_subnet.main.id
   route_table_id = aws_route_table.rt.id
+
+  depends_on = [aws_subnet.main]  # Ensure subnet is created before association
 }
 
 resource "aws_subnet" "main" {

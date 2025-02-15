@@ -38,7 +38,7 @@ jobs:
 
       - name: Apply Terraform configuration
         run: |
-          terraform apply -var-file="terraform.tfvars.json" -auto-approve -input=false
+          terraform apply -auto-approve
 
       - name: Git Config
         run: |

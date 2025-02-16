@@ -23,7 +23,7 @@ variable "public_subnet_cidr_block" {
 variable "tags" {
   description = "A map of tags to assign to the resources"
   type        = map(string)
-  default = {
+  default     = {
     Environment = "dev"
     Project     = "s3-gateway-endpoint"
   }
@@ -51,13 +51,13 @@ resource "aws_internet_gateway" "igw" {
 }
 
 resource "aws_vpc_endpoint" "s3" {
-  vpc_id          = aws_vpc.main.id
-  service_name    = "com.amazonaws.${var.region}.s3"
-  route_table_ids = [aws_route_table.rt.id] # This is where the association happens
+  vpc_id       = aws_vpc.main.id
+  service_name = "com.amazonaws.${var.region}.s3"
+  route_table_ids   = [aws_route_table.rt.id] # This is where the association happens
 
   tags = var.tags
 
-  depends_on = [aws_vpc.main] # Ensure VPC is created before the endpoint
+  depends_on = [aws_vpc.main]  # Ensure VPC is created before the endpoint
 }
 
 resource "aws_route_table" "rt" {
@@ -76,7 +76,7 @@ resource "aws_route_table_association" "a" {
   subnet_id      = aws_subnet.main.id
   route_table_id = aws_route_table.rt.id
 
-  depends_on = [aws_route_table.rt] # Ensure the route table is created before association
+  depends_on = [aws_route_table.rt]  # Ensure the route table is created before association
 }
 
 data "aws_iam_instance_profile" "ec2_profile" {
@@ -86,17 +86,19 @@ data "aws_iam_instance_profile" "ec2_profile" {
 # Create an IAM instance profile with the specified role
 resource "aws_iam_instance_profile" "ec2_profile" {
   count = data.aws_iam_instance_profile.ec2_profile.arn == "" ? 1 : 0
-  name  = "ec2_instance_profile"
-  role  = "AmazonSSMManagedInstanceCore"
+  name = "ec2_instance_profile"
+  role = "AmazonSSMManagedInstanceCore"
 }
 
 # EC2 Instance
 resource "aws_instance" "windows_ec2" {
-  ami                    = "ami-001adaa5c3ee02e10" # Windows AMI
-  instance_type          = "t2.micro"              # You might want to adjust this based on your needs
-  subnet_id              = aws_subnet.main.id
+  ami           = "ami-001adaa5c3ee02e10" # Windows AMI
+  instance_type = "t2.micro" # You might want to adjust this based on your needs
+  subnet_id     = aws_subnet.main.id
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
   iam_instance_profile   = length(aws_iam_instance_profile.ec2_profile) > 0 ? aws_iam_instance_profile.ec2_profile[0].name : data.aws_iam_instance_profile.ec2_profile.name
+  associate_public_ip_address = true  # This ensures the instance gets a public IP
+
   tags = merge(var.tags, {
     Name = "Windows-EC2-${var.tags["Environment"]}"
   })
@@ -107,7 +109,7 @@ resource "aws_security_group" "ec2_sg" {
   name        = "ec2-security-group-${var.tags["Environment"]}"
   description = "Security group for EC2 instance accessing S3 static website"
   vpc_id      = aws_vpc.main.id
-  tags        = var.tags
+  tags = var.tags
 
   # Inbound Rules
   # Since you only want to see the static website, we won't open any inbound ports here
@@ -143,7 +145,7 @@ resource "aws_s3_bucket_policy" "allow_vpce_access" {
         Effect    = "Allow"
         Principal = "*"
         Action    = "s3:GetObject"
-        Resource = [
+        Resource  = [
           "${aws_s3_bucket.static_website.arn}/*",
         ]
         Condition = {
@@ -206,17 +208,17 @@ resource "aws_s3_bucket_website_configuration" "static_website_configuration" {
 
 # Upload index.html
 resource "aws_s3_object" "index" {
-  bucket       = aws_s3_bucket.static_website.id
-  key          = "index.html"
-  source       = "./index.html" # Ensure this path is correct relative to where you run `terraform apply`
+  bucket = aws_s3_bucket.static_website.id
+  key    = "index.html"
+  source = "./index.html" # Ensure this path is correct relative to where you run `terraform apply`
   content_type = "text/html"
 }
 
 # Upload error.html
 resource "aws_s3_object" "error" {
-  bucket       = aws_s3_bucket.static_website.id
-  key          = "error.html"
-  source       = "./error.html" # Ensure this path is correct
+  bucket = aws_s3_bucket.static_website.id
+  key    = "error.html"
+  source = "./error.html" # Ensure this path is correct
   content_type = "text/html"
 }
 
@@ -224,10 +226,10 @@ resource "aws_s3_object" "error" {
 # Here we assume you have PNG files in a folder named 'images' 
 # and we'll use a wildcard to upload all PNG files in that folder
 resource "aws_s3_object" "image_folder" {
-  for_each     = fileset("path/to/your/images/", "*.png") # Adjust this path
-  bucket       = aws_s3_bucket.static_website.id
-  key          = "assets/${each.value}"
-  source       = "assets/${each.value}"
+  for_each = fileset("path/to/your/images/", "*.png") # Adjust this path
+  bucket   = aws_s3_bucket.static_website.id
+  key      = "assets/${each.value}"
+  source   = "assets/${each.value}"
   content_type = "image/png"
 }
 

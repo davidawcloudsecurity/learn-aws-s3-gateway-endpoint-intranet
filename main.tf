@@ -79,10 +79,15 @@ resource "aws_route_table_association" "a" {
   depends_on = [aws_route_table.rt] # Ensure the route table is created before association
 }
 
+data "aws_iam_instance_profile" "ec2_profile" {
+  name = "ec2_instance_profile"
+}
+
 # Create an IAM instance profile with the specified role
 resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "ec2_instance_profile"
-  role = "AmazonSSMManagedInstanceCore"
+  count = data.aws_iam_instance_profile.ec2_profile.arn == "" ? 1 : 0
+  name  = "ec2_instance_profile"
+  role  = "AmazonSSMManagedInstanceCore"
 }
 
 # EC2 Instance
@@ -91,7 +96,7 @@ resource "aws_instance" "windows_ec2" {
   instance_type          = "t2.micro"              # You might want to adjust this based on your needs
   subnet_id              = aws_subnet.main.id
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
-  iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
+  iam_instance_profile   = length(aws_iam_instance_profile.ec2_profile) > 0 ? aws_iam_instance_profile.ec2_profile[0].name : data.aws_iam_instance_profile.ec2_profile.name
   tags = merge(var.tags, {
     Name = "Windows-EC2-${var.tags["Environment"]}"
   })
@@ -117,17 +122,11 @@ resource "aws_security_group" "ec2_sg" {
   */
   # Outbound Rules
   # Allow all outbound traffic to access the S3 service
-  egress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
 
   egress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 

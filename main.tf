@@ -152,6 +152,7 @@ resource "aws_s3_bucket_policy" "allow_vpce_access" {
         Action    = "s3:GetObject"
         Resource  = [
           "${aws_s3_bucket.static_website.arn}/*",
+          "${aws_s3_bucket.static_website.arn}"
         ]
         Condition = {
           StringEquals = {

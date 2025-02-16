@@ -72,6 +72,17 @@ resource "aws_vpc_endpoint" "s3" {
   depends_on = [aws_vpc.main]  # Ensure VPC is created before the endpoint
 }
 
+resource "aws_vpc_endpoint" "s3_interface" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${var.region}.s3"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
+  subnet_ids          = [aws_subnet.main.id, aws_subnet.second_subnet.id]  # Use both subnets for high availability
+  security_group_ids  = [aws_security_group.ec2_sg.id]  # Or create a new one specific for this endpoint if needed
+
+  tags = var.tags
+}
+
 resource "aws_route_table" "rt" {
   vpc_id = aws_vpc.main.id
 
@@ -174,7 +185,7 @@ resource "aws_s3_bucket_policy" "allow_vpce_access" {
         ]
         Condition = {
           StringEquals = {
-            "aws:sourceVpce" = aws_vpc_endpoint.s3.id
+            "aws:sourceVpce" = aws_vpc_endpoint.s3_interface.id
           }
         }
       },

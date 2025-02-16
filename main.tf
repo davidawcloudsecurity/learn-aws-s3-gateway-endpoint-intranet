@@ -123,6 +123,30 @@ resource "aws_security_group" "ec2_sg" {
 
 }
 
+# S3 Bucket Policy to allow access via VPC Endpoint
+resource "aws_s3_bucket_policy" "allow_vpce_access" {
+  bucket = aws_s3_bucket.static_website.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "AllowVPCEAccess"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "s3:GetObject"
+        Resource  = [
+          "${aws_s3_bucket.static_website.arn}/*",
+        ]
+        Condition = {
+          StringEquals = {
+            "aws:sourceVpce" = aws_vpc_endpoint.s3.id
+          }
+        }
+      },
+    ]
+  })
+}
+
 resource "random_id" "bucket_suffix" {
   byte_length = 4
 }

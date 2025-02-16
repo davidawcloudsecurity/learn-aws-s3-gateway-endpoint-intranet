@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Intranet Portal</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <h1 class="text-2xl font-bold">ABC Company Portal</h1>
+                <div class="hidden md:flex space-x-4">
+                    <a href="#" class="hover:text-blue-200">Home</a>
+                    <a href="#" class="hover:text-blue-200">Departments</a>
+                    <a href="#" class="hover:text-blue-200">Resources</a>
+                    <a href="#" class="hover:text-blue-200">Directory</a>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <input type="search" placeholder="Search..." class="px-4 py-1 rounded text-gray-900">
+                <img src="/assets/male-avatar.png" alt="User Avatar" class="w-8 h-8 rounded-full">
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto py-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Quick Links -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-bold mb-4">Quick Links</h2>
+                <ul class="space-y-2">
+                    <li><a href="#" class="text-blue-600 hover:underline">Employee Handbook</a></li>
+                    <li><a href="#" class="text-blue-600 hover:underline">IT Support Portal</a></li>
+                    <li><a href="#" class="text-blue-600 hover:underline">Vacation Request</a></li>
+                    <li><a href="#" class="text-blue-600 hover:underline">Expense Reports</a></li>
+                    <li><a href="#" class="text-blue-600 hover:underline">Training Portal</a></li>
+                </ul>
+            </div>
+
+            <!-- Company News -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-bold mb-4">Company News</h2>
+                <div class="space-y-4">
+                    <article>
+                        <h3 class="font-semibold">Q1 Results Announcement</h3>
+                        <p class="text-gray-600 text-sm">Posted 2 days ago</p>
+                        <p class="mt-2">Join us for the quarterly results presentation next week...</p>
+                    </article>
+                    <article>
+                        <h3 class="font-semibold">New Office Opening</h3>
+                        <p class="text-gray-600 text-sm">Posted 5 days ago</p>
+                        <p class="mt-2">We're excited to announce our new office location in...</p>
+                    </article>
+                </div>
+            </div>
+
+            <!-- Upcoming Events -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-bold mb-4">Upcoming Events</h2>
+                <div class="space-y-4">
+                    <div class="flex items-start">
+                        <div class="bg-blue-100 text-blue-800 p-2 rounded">
+                            <div class="text-center">
+                                <div class="font-bold">FEB</div>
+                                <div class="text-2xl">20</div>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="font-semibold">Team Building Event</h3>
+                            <p class="text-sm text-gray-600">2:00 PM - Main Conference Room</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="bg-blue-100 text-blue-800 p-2 rounded">
+                            <div class="text-center">
+                                <div class="font-bold">FEB</div>
+                                <div class="text-2xl">23</div>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="font-semibold">Monthly All-Hands</h3>
+                            <p class="text-sm text-gray-600">10:00 AM - Virtual Meeting</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Second Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <!-- System Status -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-bold mb-4">System Status</h2>
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span>Email Services</span>
+                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded">Operational</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span>VPN Access</span>
+                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded">Operational</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span>File Sharing</span>
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded">Degraded</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Birthdays -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-bold mb-4">Team Birthdays</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="flex items-center">
+                        <img src="/assets/female-avatar.png" alt="Employee 1" class="w-10 h-10 rounded-full">
+                        <div class="ml-3">
+                            <div class="font-semibold">Sarah Johnson</div>
+                            <div class="text-sm text-gray-600">Feb 18</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <img src="/assets/male-avatar.png" alt="Employee 2" class="w-10 h-10 rounded-full">
+                        <div class="ml-3">
+                            <div class="font-semibold">Mike Peters</div>
+                            <div class="text-sm text-gray-600">Feb 25</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white mt-8">
+        <div class="container mx-auto py-6 px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="text-center md:text-left mb-4 md:mb-0">
+                    <h2 class="text-lg font-bold">ABC Pte Ltd</h2>
+                    <p class="text-sm text-gray-400">© 2025 All rights reserved</p>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="#" class="hover:text-blue-400">Help Center</a>
+                    <a href="#" class="hover:text-blue-400">Privacy Policy</a>
+                    <a href="#" class="hover:text-blue-400">Contact IT</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

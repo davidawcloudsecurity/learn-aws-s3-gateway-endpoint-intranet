@@ -46,6 +46,10 @@ resource "aws_subnet" "main" {
   })
 }
 
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.main.id
+}
+
 resource "aws_vpc_endpoint" "s3" {
   vpc_id          = aws_vpc.main.id
   service_name    = "com.amazonaws.${var.region}.s3"
@@ -60,6 +64,12 @@ resource "aws_route_table" "rt" {
   vpc_id = aws_vpc.main.id
 
   tags = var.tags
+}
+
+resource "aws_route" "internet_access" {
+  route_table_id         = aws_route_table.rt.id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.igw.id
 }
 
 resource "aws_route_table_association" "a" {
@@ -167,10 +177,10 @@ resource "aws_s3_bucket_ownership_controls" "example" {
 resource "aws_s3_bucket_public_access_block" "example" {
   bucket = aws_s3_bucket.static_website.id
 
-  block_public_acls       = false
-  block_public_policy     = false
-  ignore_public_acls      = false
-  restrict_public_buckets = false
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
 resource "aws_s3_bucket_acl" "example" {

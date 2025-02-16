@@ -38,11 +38,23 @@ resource "aws_vpc" "main" {
 }
 
 resource "aws_subnet" "main" {
-  vpc_id     = aws_vpc.main.id
-  cidr_block = var.public_subnet_cidr_block
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = var.public_subnet_cidr_block
+  availability_zone = "${var.region}b" # Example: If your first subnet is in us-east-1b, use us-east-1a here. Adjust based on your existing subnet's AZ.
 
   tags = merge(var.tags, {
     Name = "subnet-${var.tags["Environment"]}"
+  })
+}
+
+# Assuming your existing subnet is in one AZ, let's create another in a different AZ.
+resource "aws_subnet" "second_subnet" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = cidrsubnet(var.vpc_cidr_block, 8, 2) # Example: This creates 192.168.2.0/24 if var.vpc_cidr_block is 192.168.0.0/16
+  availability_zone = "${var.region}a"                     # Example: If your first subnet is in us-east-1b, use us-east-1a here. Adjust based on your existing subnet's AZ.
+
+  tags = merge(var.tags, {
+    Name = "second-subnet-${var.tags["Environment"]}"
   })
 }
 
@@ -79,6 +91,12 @@ resource "aws_route_table_association" "a" {
   depends_on = [aws_route_table.rt] # Ensure the route table is created before association
 }
 
+# Since the route table association needs to be updated for this new subnet:
+resource "aws_route_table_association" "second_subnet_association" {
+  subnet_id      = aws_subnet.second_subnet.id
+  route_table_id = aws_route_table.rt.id
+}
+
 data "aws_iam_instance_profile" "ec2_profile" {
   name = "ec2_instance_profile"
 }
@@ -98,6 +116,11 @@ resource "aws_instance" "windows_ec2" {
   vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
   iam_instance_profile        = length(aws_iam_instance_profile.ec2_profile) > 0 ? aws_iam_instance_profile.ec2_profile[0].name : data.aws_iam_instance_profile.ec2_profile.name
   associate_public_ip_address = true # This ensures the instance gets a public IP
+
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "required"
+  }
 
   tags = merge(var.tags, {
     Name = "Windows-EC2-${var.tags["Environment"]}"
@@ -147,6 +170,7 @@ resource "aws_s3_bucket_policy" "allow_vpce_access" {
         Action    = "s3:GetObject"
         Resource = [
           "${aws_s3_bucket.static_website.arn}/*",
+          "${aws_s3_bucket.static_website.arn}"
         ]
         Condition = {
           StringEquals = {
@@ -231,6 +255,71 @@ resource "aws_s3_object" "image_folder" {
   key          = "assets/${each.value}"
   source       = "assets/${each.value}"
   content_type = "image/png"
+}
+
+# Update the ALB to use both subnets
+resource "aws_lb" "alb" {
+  name               = "my-alb"
+  internal           = false
+  load_balancer_type = "application"
+  subnets            = [aws_subnet.main.id, aws_subnet.second_subnet.id]
+  security_groups    = [aws_security_group.ec2_sg.id]
+
+  tags = var.tags
+}
+
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.alb.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type = "fixed-response"
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "Default HTTP Response"
+      status_code  = "200"
+    }
+  }
+}
+
+resource "aws_lb_target_group" "tg" {
+  name     = "my-target-group"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.main.id
+
+  health_check {
+    path                = "/"
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+    timeout             = 6
+    interval            = 30
+    matcher             = "307,405" # Check for these status codes
+  }
+}
+
+resource "aws_lb_listener_rule" "trailing_slash_redirect" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 100
+
+  action {
+    type = "redirect"
+
+    redirect {
+      protocol    = "HTTP"
+      port        = "#{port}"
+      host        = "#{host}"
+      path        = "/#{path}index.html"
+      status_code = "HTTP_301"
+    }
+  }
+
+  condition {
+    path_pattern {
+      values = ["*/"]
+    }
+  }
 }
 
 output "s3_bucket_name" {

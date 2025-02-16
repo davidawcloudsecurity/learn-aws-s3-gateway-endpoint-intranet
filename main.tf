@@ -97,6 +97,8 @@ resource "aws_instance" "windows_ec2" {
   subnet_id     = aws_subnet.main.id
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
   iam_instance_profile   = length(aws_iam_instance_profile.ec2_profile) > 0 ? aws_iam_instance_profile.ec2_profile[0].name : data.aws_iam_instance_profile.ec2_profile.name
+  associate_public_ip_address = true  # This ensures the instance gets a public IP
+
   tags = merge(var.tags, {
     Name = "Windows-EC2-${var.tags["Environment"]}"
   })

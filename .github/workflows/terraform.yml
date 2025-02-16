@@ -1,7 +1,7 @@
 name: "learn-s3-gateway-endpoint-intranet"
 
 on:
-  push:
+  # push:
   workflow_dispatch:
 
 env:

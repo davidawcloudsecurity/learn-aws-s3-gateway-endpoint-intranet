@@ -40,9 +40,21 @@ resource "aws_vpc" "main" {
 resource "aws_subnet" "main" {
   vpc_id     = aws_vpc.main.id
   cidr_block = var.public_subnet_cidr_block
+  availability_zone = "${var.region}b"  # Example: If your first subnet is in us-east-1b, use us-east-1a here. Adjust based on your existing subnet's AZ.
 
   tags = merge(var.tags, {
     Name = "subnet-${var.tags["Environment"]}"
+  })
+}
+
+# Assuming your existing subnet is in one AZ, let's create another in a different AZ.
+resource "aws_subnet" "second_subnet" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block = cidrsubnet(var.vpc_cidr_block, 8, 2)  # Example: This creates 192.168.2.0/24 if var.vpc_cidr_block is 192.168.0.0/16
+  availability_zone = "${var.region}a"  # Example: If your first subnet is in us-east-1b, use us-east-1a here. Adjust based on your existing subnet's AZ.
+
+  tags = merge(var.tags, {
+    Name = "second-subnet-${var.tags["Environment"]}"
   })
 }
 
@@ -77,6 +89,12 @@ resource "aws_route_table_association" "a" {
   route_table_id = aws_route_table.rt.id
 
   depends_on = [aws_route_table.rt]  # Ensure the route table is created before association
+}
+
+# Since the route table association needs to be updated for this new subnet:
+resource "aws_route_table_association" "second_subnet_association" {
+  subnet_id      = aws_subnet.second_subnet.id
+  route_table_id = aws_route_table.rt.id
 }
 
 data "aws_iam_instance_profile" "ec2_profile" {
@@ -239,13 +257,13 @@ resource "aws_s3_object" "image_folder" {
   content_type = "image/png"
 }
 
+# Update the ALB to use both subnets
 resource "aws_lb" "alb" {
   name               = "my-alb"
-  internal           = true
+  internal           = false
   load_balancer_type = "application"
-  subnets            = [aws_subnet.main.id]  # Assuming you only have one subnet
-
-  security_groups = [aws_security_group.ec2_sg.id]  # Using the existing security group
+  subnets            = [aws_subnet.main.id, aws_subnet.second_subnet.id]
+  security_groups = [aws_security_group.ec2_sg.id]
 
   tags = var.tags
 }

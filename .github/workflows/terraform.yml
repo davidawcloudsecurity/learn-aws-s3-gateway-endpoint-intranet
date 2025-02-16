@@ -1,7 +1,7 @@
 name: "learn-s3-gateway-endpoint-intranet-destroy"
 
 on:
-  push:
+  # push:
   workflow_dispatch:
 
 env:
@@ -65,7 +65,7 @@ jobs:
           mv terraform.tfstate state                    
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/davidawcloudsecurity/learn-terraform-aws-wordpress-ec2.git                   
+          git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/davidawcloudsecurity/learn-aws-s3-gateway-endpoint-intranet.git                   
           git fetch origin destroy/main
           git checkout destroy/main
           git merge origin/destroy/main

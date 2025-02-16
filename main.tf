@@ -69,6 +69,60 @@ resource "aws_route_table_association" "a" {
   depends_on = [aws_route_table.rt]  # Ensure the route table is created before association
 }
 
+# Create an IAM instance profile with the specified role
+resource "aws_iam_instance_profile" "ec2_profile" {
+  name = "ec2_instance_profile"
+  role = "AmazonSSMManagedInstanceCore"
+}
+
+# EC2 Instance
+resource "aws_instance" "windows_ec2" {
+  ami           = "ami-001adaa5c3ee02e10" # Windows AMI
+  instance_type = "t2.micro" # You might want to adjust this based on your needs
+  subnet_id     = aws_subnet.main.id
+  vpc_security_group_ids = [aws_security_group.ec2_sg.id]
+  iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
+  tags = merge(var.tags, {
+    Name = "Windows-EC2-${var.tags["Environment"]}"
+  })
+}
+
+# Security Group for EC2 Instance
+resource "aws_security_group" "ec2_sg" {
+  name        = "ec2-security-group-${var.tags["Environment"]}"
+  description = "Security group for EC2 instance accessing S3 static website"
+  vpc_id      = aws_vpc.main.id
+  tags = var.tags
+
+  # Inbound Rules
+  # Since you only want to see the static website, we won't open any inbound ports here
+  # unless you need RDP for management. Here's an example for RDP if needed:
+  /*
+  ingress {
+    from_port   = 3389
+    to_port     = 3389
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # Be cautious with this! Limit to your IP or a secure range.
+  }
+  */
+  # Outbound Rules
+  # Allow all outbound traffic to access the S3 service
+  egress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+}
+
 resource "random_id" "bucket_suffix" {
   byte_length = 4
 }
@@ -157,4 +211,9 @@ output "vpc_id" {
 output "subnet_id" {
   value       = aws_subnet.main.id
   description = "The ID of the main subnet"
+}
+
+output "ec2_instance_id" {
+  value       = aws_instance.windows_ec2.id
+  description = "The ID of the EC2 instance"
 }

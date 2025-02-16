@@ -238,6 +238,71 @@ resource "aws_s3_object" "image_folder" {
   content_type = "image/png"
 }
 
+resource "aws_lb" "alb" {
+  name               = "my-alb"
+  internal           = true
+  load_balancer_type = "application"
+  subnets            = [aws_subnet.main.id]  # Assuming you only have one subnet
+
+  security_groups = [aws_security_group.ec2_sg.id]  # Using the existing security group
+
+  tags = var.tags
+}
+
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.alb.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "fixed-response"
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "Default HTTP Response"
+      status_code  = "200"
+    }
+  }
+}
+
+resource "aws_lb_target_group" "tg" {
+  name     = "my-target-group"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.main.id
+
+  health_check {
+    path                = "/"
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+    timeout             = 6
+    interval            = 30
+    matcher             = "307,405"  # Check for these status codes
+  }
+}
+
+resource "aws_lb_listener_rule" "trailing_slash_redirect" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 100
+
+  action {
+    type = "redirect"
+
+    redirect {
+      protocol = "HTTP"
+      port     = "#{port}"
+      host     = "#{host}"
+      path     = "/#{path}index.html"
+      status_code = "HTTP_301"
+    }
+  }
+
+  condition {
+    path_pattern {
+      values = ["*/"]
+    }
+  }
+}
+
 output "s3_bucket_name" {
   value       = aws_s3_bucket.static_website.bucket
   description = "The name of the S3 static website bucket"

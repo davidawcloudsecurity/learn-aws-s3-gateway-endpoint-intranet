@@ -117,6 +117,33 @@ resource "aws_s3_bucket_website_configuration" "static_website_configuration" {
   }
 }
 
+# Upload index.html
+resource "aws_s3_object" "index" {
+  bucket       = aws_s3_bucket.static_website.id
+  key          = "index.html"
+  source       = "./index.html" # Ensure this path is correct relative to where you run `terraform apply`
+  content_type = "text/html"
+}
+
+# Upload error.html
+resource "aws_s3_object" "error" {
+  bucket       = aws_s3_bucket.static_website.id
+  key          = "error.html"
+  source       = "./error.html" # Ensure this path is correct
+  content_type = "text/html"
+}
+
+# Upload folder with PNG files
+# Here we assume you have PNG files in a folder named 'images' 
+# and we'll use a wildcard to upload all PNG files in that folder
+resource "aws_s3_object" "image_folder" {
+  for_each     = fileset("path/to/your/images/", "*.png") # Adjust this path
+  bucket       = aws_s3_bucket.static_website.id
+  key          = "assets/${each.value}"
+  source       = "assets/${each.value}"
+  content_type = "image/png"
+}
+
 output "s3_bucket_name" {
   value       = aws_s3_bucket.static_website.bucket
   description = "The name of the S3 static website bucket"

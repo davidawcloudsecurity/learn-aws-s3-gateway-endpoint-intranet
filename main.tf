@@ -99,6 +99,11 @@ resource "aws_instance" "windows_ec2" {
   iam_instance_profile   = length(aws_iam_instance_profile.ec2_profile) > 0 ? aws_iam_instance_profile.ec2_profile[0].name : data.aws_iam_instance_profile.ec2_profile.name
   associate_public_ip_address = true  # This ensures the instance gets a public IP
 
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "required"
+  }
+
   tags = merge(var.tags, {
     Name = "Windows-EC2-${var.tags["Environment"]}"
   })

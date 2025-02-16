@@ -96,7 +96,7 @@ resource "aws_instance" "windows_ec2" {
   instance_type = "t2.micro" # You might want to adjust this based on your needs
   subnet_id     = aws_subnet.main.id
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
-  iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
+  iam_instance_profile   = aws_iam_instance_profile.ec2_profile[0].name
   tags = merge(var.tags, {
     Name = "Windows-EC2-${var.tags["Environment"]}"
   })

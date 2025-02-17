@@ -151,14 +151,14 @@ resource "aws_security_group" "ec2_sg" {
   # Inbound Rules
   # Since you only want to see the static website, we won't open any inbound ports here
   # unless you need RDP for management. Here's an example for RDP if needed:
-  /*
+  
   ingress {
-    from_port   = 3389
-    to_port     = 3389
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"] # Be cautious with this! Limit to your IP or a secure range.
   }
-  */
+  
   # Outbound Rules
   # Allow all outbound traffic to access the S3 service
 

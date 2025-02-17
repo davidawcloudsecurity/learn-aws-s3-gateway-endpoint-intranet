@@ -30,7 +30,9 @@ variable "tags" {
 }
 
 resource "aws_vpc" "main" {
-  cidr_block = var.vpc_cidr_block
+  cidr_block           = var.vpc_cidr_block
+  enable_dns_support   = true
+  enable_dns_hostnames = true
 
   tags = merge(var.tags, {
     Name = "vpc-${var.tags["Environment"]}"
@@ -61,14 +63,26 @@ resource "aws_subnet" "second_subnet" {
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
 }
-
+/* Remove s3 gateway endpoint
 resource "aws_vpc_endpoint" "s3" {
-  vpc_id          = aws_vpc.main.id
-  service_name    = "com.amazonaws.${var.region}.s3"
-  route_table_ids = [aws_route_table.rt.id] # This is where the association happens
+  vpc_id       = aws_vpc.main.id
+  service_name = "com.amazonaws.${var.region}.s3"
+  route_table_ids   = [aws_route_table.rt.id] # This is where the association happens
 
   tags = var.tags
 
+  depends_on = [aws_vpc.main]  # Ensure VPC is created before the endpoint
+}
+*/
+resource "aws_vpc_endpoint" "s3_interface" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${var.region}.s3"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = false
+  subnet_ids          = [aws_subnet.main.id, aws_subnet.second_subnet.id] # Use both subnets for high availability
+  security_group_ids  = [aws_security_group.ec2_sg.id]                    # Or create a new one specific for this endpoint if needed
+
+  tags       = var.tags
   depends_on = [aws_vpc.main] # Ensure VPC is created before the endpoint
 }
 
@@ -174,7 +188,7 @@ resource "aws_s3_bucket_policy" "allow_vpce_access" {
         ]
         Condition = {
           StringEquals = {
-            "aws:sourceVpce" = aws_vpc_endpoint.s3.id
+            "aws:sourceVpce" = aws_vpc_endpoint.s3_interface.id
           }
         }
       },

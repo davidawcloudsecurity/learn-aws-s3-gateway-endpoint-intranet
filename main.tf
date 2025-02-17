@@ -83,6 +83,7 @@ resource "aws_vpc_endpoint" "s3_interface" {
   security_group_ids  = [aws_security_group.ec2_sg.id]  # Or create a new one specific for this endpoint if needed
 
   tags = var.tags
+  depends_on = [aws_vpc.main]  # Ensure VPC is created before the endpoint
 }
 
 resource "aws_route_table" "rt" {

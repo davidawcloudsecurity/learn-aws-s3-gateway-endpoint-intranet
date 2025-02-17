@@ -61,7 +61,7 @@ resource "aws_subnet" "second_subnet" {
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
 }
-
+/* Remove s3 gateway endpoint
 resource "aws_vpc_endpoint" "s3" {
   vpc_id       = aws_vpc.main.id
   service_name = "com.amazonaws.${var.region}.s3"
@@ -71,7 +71,7 @@ resource "aws_vpc_endpoint" "s3" {
 
   depends_on = [aws_vpc.main]  # Ensure VPC is created before the endpoint
 }
-
+*/
 resource "aws_vpc_endpoint" "s3_interface" {
   vpc_id              = aws_vpc.main.id
   service_name        = "com.amazonaws.${var.region}.s3"

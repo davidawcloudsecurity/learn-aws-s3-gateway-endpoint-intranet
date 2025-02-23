@@ -158,6 +158,20 @@ resource "aws_security_group" "ec2_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"] # Be cautious with this! Limit to your IP or a secure range.
   }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # Be cautious with this! Limit to your IP or a secure range.
+  }
+
+  ingress {
+    from_port                = 80
+    to_port                  = 80
+    protocol                 = "tcp"
+    source_security_group_id = aws_security_group.ec2_sg.id  # Reference the same security group ID
+  }
   
   # Outbound Rules
   # Allow all outbound traffic to access the S3 service

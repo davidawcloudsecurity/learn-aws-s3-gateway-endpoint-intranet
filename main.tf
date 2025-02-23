@@ -291,8 +291,8 @@ resource "aws_lb_listener" "http" {
     type             = "fixed-response"
     fixed_response {
       content_type = "text/plain"
-      message_body = "Default HTTP Response"
-      status_code  = "200"
+      message_body = "S3 will return a non-200 HTTP response code."
+      status_code  = "307,405"
     }
   }
 }

@@ -376,14 +376,18 @@ data "aws_network_interfaces" "s3_endpoint_enis" {
   depends_on = [aws_vpc_endpoint.s3_interface]
 }
 
+# Get details for each network interface individually
+data "aws_network_interface" "s3_endpoint_eni" {
+  count = length(data.aws_network_interfaces.s3_endpoint_enis.ids)
+  id    = tolist(data.aws_network_interfaces.s3_endpoint_enis.ids)[count.index]
+}
+
 # Dynamically create target group attachments for each endpoint ENI
 resource "aws_lb_target_group_attachment" "s3_endpoint_targets" {
-  count            = length(data.aws_network_interfaces.s3_endpoint_enis.ids)
+  count            = length(data.aws_network_interface.s3_endpoint_eni)
   target_group_arn = aws_lb_target_group.tg.arn
-  target_id        = tolist(data.aws_network_interfaces.s3_endpoint_enis.private_ips)[count.index]
+  target_id        = data.aws_network_interface.s3_endpoint_eni[count.index].private_ip
   port             = 80
-
-  depends_on = [aws_vpc_endpoint.s3_interface]
 }
 
 resource "aws_lb_listener_rule" "trailing_slash_redirect" {

@@ -159,6 +159,13 @@ resource "aws_security_group" "ec2_sg" {
     cidr_blocks = ["0.0.0.0/0"] # Be cautious with this! Limit to your IP or a secure range.
   }
 
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # Be cautious with this! Limit to your IP or a secure range.
+  }
+
   # Outbound Rules
   # Allow all outbound traffic to access the S3 service
 
@@ -168,7 +175,16 @@ resource "aws_security_group" "ec2_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
 
+# Create a security group rule to reference the same security group ID
+resource "aws_security_group_rule" "self_reference" {
+  type                     = "ingress"
+  from_port                = 80
+  to_port                  = 80
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.ec2_sg.id
+  security_group_id        = aws_security_group.ec2_sg.id
 }
 
 # S3 Bucket Policy to allow access via VPC Endpoint

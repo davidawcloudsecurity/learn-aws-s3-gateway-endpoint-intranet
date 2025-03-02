@@ -63,17 +63,7 @@ resource "aws_subnet" "second_subnet" {
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
 }
-/* Remove s3 gateway endpoint
-resource "aws_vpc_endpoint" "s3" {
-  vpc_id       = aws_vpc.main.id
-  service_name = "com.amazonaws.${var.region}.s3"
-  route_table_ids   = [aws_route_table.rt.id] # This is where the association happens
 
-  tags = var.tags
-
-  depends_on = [aws_vpc.main]  # Ensure VPC is created before the endpoint
-}
-*/
 resource "aws_vpc_endpoint" "s3_interface" {
   vpc_id              = aws_vpc.main.id
   service_name        = "com.amazonaws.${var.region}.s3"
@@ -165,7 +155,14 @@ resource "aws_security_group" "ec2_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"] # Be cautious with this! Limit to your IP or a secure range.
   }
- 
+
+  ingress {
+    from_port                = 80
+    to_port                  = 80
+    protocol                 = "tcp"
+    source_security_group_id = aws_security_group.ec2_sg.id  # Reference the same security group ID
+  }
+  
   # Outbound Rules
   # Allow all outbound traffic to access the S3 service
 
@@ -175,16 +172,6 @@ resource "aws_security_group" "ec2_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-}
-
-# Create a security group rule to reference the same security group ID
-resource "aws_security_group_rule" "self_reference" {
-  type                     = "ingress"
-  from_port                = 80
-  to_port                  = 80
-  protocol                 = "tcp"
-  source_security_group_id = aws_security_group.ec2_sg.id
-  security_group_id        = aws_security_group.ec2_sg.id
 }
 
 # S3 Bucket Policy to allow access via VPC Endpoint
@@ -350,6 +337,15 @@ resource "aws_lb_listener_rule" "trailing_slash_redirect" {
       values = ["*/"]
     }
   }
+}
+
+# Create a private hosted zone using the same name as the S3 bucket
+resource "aws_route53_zone" "private_hosted_zone" {
+  name = aws_s3_bucket.static_website.bucket
+  vpc {
+    vpc_id = aws_vpc.main.id
+  }
+  tags = var.tags
 }
 
 output "s3_bucket_name" {

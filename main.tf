@@ -424,8 +424,3 @@ output "ec2_instance_id" {
   value       = aws_instance.windows_ec2.id
   description = "The ID of the EC2 instance"
 }
-
-output "ec2_instance_id" {
-  value       = aws_instance.windows_ec2.id
-  description = "The ID of the EC2 instance"
-}

@@ -340,10 +340,10 @@ resource "aws_lb_listener" "http" {
 }
 
 resource "aws_lb_target_group" "tg" {
-  name       = "my-target-group"
-  port       = 80
-  protocol   = "HTTP"
-  vpc_id     = aws_vpc.main.id
+  name        = "my-target-group"
+  port        = 80
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.main.id
   target_type = "ip"
 
   health_check {
@@ -356,18 +356,28 @@ resource "aws_lb_target_group" "tg" {
   }
 }
 
-data "aws_network_interface" "s3_endpoint_enis" {
-  count = 2
-  id    = aws_vpc_endpoint.s3_interface.network_interface_ids[count.index]
-  depends_on = [aws_vpc_endpoint.s3_interface]
-}
+resource "null_resource" "register_targets" {
+  triggers = {
+    endpoint_id = aws_vpc_endpoint.s3_interface.id
+  }
 
-resource "aws_lb_target_group_attachment" "s3_endpoint_targets" {
-  count            = 2
-  target_group_arn = aws_lb_target_group.tg.arn
-  target_id        = data.aws_network_interface.s3_endpoint_enis[count.index].private_ip_address
-  port             = 80
-  depends_on = [data.aws_network_interface.s3_endpoint_enis]
+  provisioner "local-exec" {
+    command = <<EOT
+      # Get ENI IDs for the VPC endpoint
+      ENI_IDS=$(aws ec2 describe-vpc-endpoints --vpc-endpoint-ids ${aws_vpc_endpoint.s3_interface.id} --query 'VpcEndpoints[0].NetworkInterfaceIds' --output text)
+      
+      # For each ENI, get the private IP and register it with the target group
+      for ENI_ID in $ENI_IDS; do
+        IP=$(aws ec2 describe-network-interfaces --network-interface-ids $ENI_ID --query 'NetworkInterfaces[0].PrivateIpAddress' --output text)
+        aws elbv2 register-targets --target-group-arn ${aws_lb_target_group.tg.arn} --targets Id=$IP,Port=80
+      done
+    EOT
+  }
+
+  depends_on = [
+    aws_vpc_endpoint.s3_interface,
+    aws_lb_target_group.tg
+  ]
 }
 
 resource "aws_lb_listener_rule" "trailing_slash_redirect" {
@@ -402,11 +412,6 @@ resource "aws_route53_zone" "private_hosted_zone" {
   tags = var.tags
 }
 
-# Output the endpoint's network interface IDs as a comma-separated string
-output "s3_endpoint_eni_ids" {
-  value = join(",", aws_vpc_endpoint.s3_interface.network_interface_ids)
-}
-
 output "s3_bucket_name" {
   value       = aws_s3_bucket.static_website.bucket
   description = "The name of the S3 static website bucket"
@@ -425,4 +430,14 @@ output "subnet_id" {
 output "ec2_instance_id" {
   value       = aws_instance.windows_ec2.id
   description = "The ID of the EC2 instance"
+}
+
+# Output the endpoint's network interface IDs as a comma-separated string
+output "s3_endpoint_eni_ids" {
+  value = join(",", aws_vpc_endpoint.s3_interface.network_interface_ids)
+}
+
+# Output instruction for the second step
+output "next_steps" {
+  value = "Run 'terraform output -json | jq -r .s3_endpoint_eni_ids.value' to get the ENI IDs, then update your configuration with these values."
 }

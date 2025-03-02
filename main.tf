@@ -316,7 +316,7 @@ resource "aws_s3_object" "image_folder" {
 # Update the ALB to use both subnets
 resource "aws_lb" "alb" {
   name               = "my-alb"
-  internal           = false
+  internal           = true
   load_balancer_type = "application"
   subnets            = [aws_subnet.main.id, aws_subnet.second_subnet.id]
   security_groups = [aws_security_group.ec2_sg.id]
@@ -410,6 +410,18 @@ resource "aws_route53_zone" "private_hosted_zone" {
     vpc_id = aws_vpc.main.id
   }
   tags = var.tags
+}
+
+resource "aws_route53_record" "alias" {
+  zone_id = aws_route53_zone.private_hosted_zone.zone_id
+  name    = aws_s3_bucket.static_website.bucket  # Replace with your desired alias name
+  type    = "A"
+
+  alias {
+    name                   = aws_lb.alb.dns_name
+    zone_id                = aws_lb.alb.zone_id
+    evaluate_target_health = true
+  }
 }
 
 output "s3_bucket_name" {

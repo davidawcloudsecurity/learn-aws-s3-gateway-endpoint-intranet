@@ -155,7 +155,17 @@ resource "aws_instance" "windows_ec2" {
   subnet_id                   = aws_subnet.main.id
   vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
   iam_instance_profile        = length(aws_iam_instance_profile.ec2_profile) > 0 ? aws_iam_instance_profile.ec2_profile[0].name : data.aws_iam_instance_profile.ec2_profile.name
-  associate_public_ip_address = true # This ensures the instance gets a public IP
+  associate_public_ip_address = false # This ensures the instance gets a public IP
+
+  user_data = <<-EOF
+    <powershell>
+    net user ssm-user P@ssword123 /add
+    Start-Process "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"
+    curl HTTP://${aws_s3_bucket.static_website.id}.
+    </powershell>
+  EOF
+
+  depends_on = [aws_s3_bucket.static_website]
 
   metadata_options {
     http_endpoint = "enabled"
@@ -330,12 +340,8 @@ resource "aws_lb_listener" "http" {
   protocol          = "HTTP"
 
   default_action {
-    type = "fixed-response"
-    fixed_response {
-      content_type = "text/plain"
-      message_body = "Default HTTP Response"
-      status_code  = "200"
-    }
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.tg.arn
   }
 }
 

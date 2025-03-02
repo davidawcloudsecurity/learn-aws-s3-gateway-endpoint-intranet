@@ -357,13 +357,13 @@ resource "aws_lb_target_group" "tg" {
 }
 
 data "aws_network_interface" "s3_endpoint_enis" {
-  count = length(aws_vpc_endpoint.s3_interface.network_interface_ids)
+  count = 2
   id    = aws_vpc_endpoint.s3_interface.network_interface_ids[count.index]
   depends_on = [aws_vpc_endpoint.s3_interface]
 }
 
 resource "aws_lb_target_group_attachment" "s3_endpoint_targets" {
-  count            = length(data.aws_network_interface.s3_endpoint_enis)
+  count            = 2
   target_group_arn = aws_lb_target_group.tg.arn
   target_id        = data.aws_network_interface.s3_endpoint_enis[count.index].private_ip_address
   port             = 80

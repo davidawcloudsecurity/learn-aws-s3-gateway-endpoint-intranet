@@ -356,23 +356,28 @@ resource "aws_lb_target_group" "tg" {
   }
 }
 
-# Get the network interface IDs directly from the VPC endpoint
-locals {
-  endpoint_eni_ids = aws_vpc_endpoint.s3_interface.network_interface_ids
-}
+resource "null_resource" "register_targets" {
+  triggers = {
+    endpoint_id = aws_vpc_endpoint.s3_interface.id
+  }
 
-# Get details for each network interface
-data "aws_network_interface" "s3_endpoint_enis" {
-  count = length(local.endpoint_eni_ids)
-  id    = local.endpoint_eni_ids[count.index]
-}
+  provisioner "local-exec" {
+    command = <<EOT
+      # Get ENI IDs for the VPC endpoint
+      ENI_IDS=$(aws ec2 describe-vpc-endpoints --vpc-endpoint-ids ${aws_vpc_endpoint.s3_interface.id} --query 'VpcEndpoints[0].NetworkInterfaceIds' --output text)
+      
+      # For each ENI, get the private IP and register it with the target group
+      for ENI_ID in $ENI_IDS; do
+        IP=$(aws ec2 describe-network-interfaces --network-interface-ids $ENI_ID --query 'NetworkInterfaces[0].PrivateIpAddress' --output text)
+        aws elbv2 register-targets --target-group-arn ${aws_lb_target_group.tg.arn} --targets Id=$IP,Port=80
+      done
+    EOT
+  }
 
-# Create target group attachments
-resource "aws_lb_target_group_attachment" "s3_endpoint_targets" {
-  count            = length(data.aws_network_interface.s3_endpoint_enis)
-  target_group_arn = aws_lb_target_group.tg.arn
-  target_id        = data.aws_network_interface.s3_endpoint_enis[count.index].private_ip
-  port             = 80
+  depends_on = [
+    aws_vpc_endpoint.s3_interface,
+    aws_lb_target_group.tg
+  ]
 }
 
 resource "aws_lb_listener_rule" "trailing_slash_redirect" {

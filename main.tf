@@ -325,8 +325,8 @@ resource "aws_s3_object" "image_folder" {
 resource "aws_s3_object" "css_folder" {
   for_each = fileset("css/", "*.css") # Adjust this path
   bucket   = aws_s3_bucket.static_website.id
-  key      = "assets/${each.value}"
-  source   = "assets/${each.value}"
+  key      = "css/${each.value}"
+  source   = "css/${each.value}"
   content_type = "text/html"
 }
 

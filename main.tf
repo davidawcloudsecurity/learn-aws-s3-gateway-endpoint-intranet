@@ -359,6 +359,7 @@ resource "aws_lb_target_group" "tg" {
 data "aws_network_interface" "s3_endpoint_enis" {
   for_each = toset(aws_vpc_endpoint.s3_interface.network_interface_ids)
   id       = each.value
+  depends_on = [aws_vpc_endpoint.s3_interface] # Explicit dependency
 }
 
 resource "aws_lb_target_group_attachment" "s3_endpoint_targets" {
@@ -366,6 +367,7 @@ resource "aws_lb_target_group_attachment" "s3_endpoint_targets" {
   target_group_arn = aws_lb_target_group.tg.arn
   target_id        = each.value.private_ip_address
   port             = 80
+  depends_on = [data.aws_network_interface.s3_endpoint_enis]
 }
 
 resource "aws_lb_listener_rule" "trailing_slash_redirect" {

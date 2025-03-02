@@ -306,7 +306,7 @@ resource "aws_s3_object" "error" {
 # Here we assume you have PNG files in a folder named 'images' 
 # and we'll use a wildcard to upload all PNG files in that folder
 resource "aws_s3_object" "image_folder" {
-  for_each     = fileset("path/to/your/images/", "*.png") # Adjust this path
+  for_each     = fileset("assets/", "*.png") # Adjust this path
   bucket       = aws_s3_bucket.static_website.id
   key          = "assets/${each.value}"
   source       = "assets/${each.value}"

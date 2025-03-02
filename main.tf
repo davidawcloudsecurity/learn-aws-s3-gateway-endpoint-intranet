@@ -412,6 +412,16 @@ resource "aws_route53_zone" "private_hosted_zone" {
   tags = var.tags
 }
 
+# Output the endpoint's network interface IDs as a comma-separated string
+output "s3_endpoint_eni_ids" {
+  value = join(",", aws_vpc_endpoint.s3_interface.network_interface_ids)
+}
+
+# Output instruction for the second step
+output "next_steps" {
+  value = "Run 'terraform output -json | jq -r .s3_endpoint_eni_ids.value' to get the ENI IDs, then update your configuration with these values."
+}
+
 output "s3_bucket_name" {
   value       = aws_s3_bucket.static_website.bucket
   description = "The name of the S3 static website bucket"

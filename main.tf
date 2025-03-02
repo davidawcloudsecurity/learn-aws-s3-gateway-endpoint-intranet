@@ -306,6 +306,16 @@ resource "aws_lb_target_group" "tg" {
   protocol = "HTTP"
   vpc_id   = aws_vpc.main.id
 
+  target {
+    id   = aws_subnet.main.id
+    port = 80
+  }
+
+  target {
+    id   = aws_subnet.second_subnet.id
+    port = 80
+  }
+
   health_check {
     path                = "/"
     healthy_threshold   = 3

@@ -161,8 +161,6 @@ resource "aws_instance" "windows_ec2" {
     <powershell>
     net user ssm-user2 P@ssword123 /add
     net localgroup Administrators ssm-user2 /add
-    Start-Process "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"
-    curl HTTP://${aws_s3_bucket.static_website.id}.
     </powershell>
   EOF
 

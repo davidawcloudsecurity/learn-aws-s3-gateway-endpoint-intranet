@@ -357,15 +357,15 @@ resource "aws_lb_target_group" "tg" {
 }
 
 data "aws_network_interface" "s3_endpoint_enis" {
-  for_each = toset(aws_vpc_endpoint.s3_interface.network_interface_ids)
-  id       = each.value
-  depends_on = [aws_vpc_endpoint.s3_interface] # Explicit dependency
+  count = length(aws_vpc_endpoint.s3_interface.network_interface_ids)
+  id    = aws_vpc_endpoint.s3_interface.network_interface_ids[count.index]
+  depends_on = [aws_vpc_endpoint.s3_interface]
 }
 
 resource "aws_lb_target_group_attachment" "s3_endpoint_targets" {
-  for_each         = data.aws_network_interface.s3_endpoint_enis
+  count            = length(data.aws_network_interface.s3_endpoint_enis)
   target_group_arn = aws_lb_target_group.tg.arn
-  target_id        = each.value.private_ip_address
+  target_id        = data.aws_network_interface.s3_endpoint_enis[count.index].private_ip_address
   port             = 80
   depends_on = [data.aws_network_interface.s3_endpoint_enis]
 }

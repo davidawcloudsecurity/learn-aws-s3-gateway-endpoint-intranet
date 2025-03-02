@@ -324,6 +324,14 @@ resource "aws_s3_object" "image_folder" {
   content_type = "image/png"
 }
 
+resource "aws_s3_object" "css_folder" {
+  for_each = fileset("css/", "*.css") # Adjust this path
+  bucket   = aws_s3_bucket.static_website.id
+  key      = "assets/${each.value}"
+  source   = "assets/${each.value}"
+  content_type = "text/html"
+}
+
 # Update the ALB to use both subnets
 resource "aws_lb" "alb" {
   name               = "my-alb"

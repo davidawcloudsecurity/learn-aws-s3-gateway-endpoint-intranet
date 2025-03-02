@@ -356,37 +356,22 @@ resource "aws_lb_target_group" "tg" {
   }
 }
 
-# Get the network interfaces associated with the S3 VPC endpoint
-data "aws_network_interfaces" "s3_endpoint_enis" {
-  filter {
-    name   = "vpc-id"
-    values = [aws_vpc.main.id]
-  }
-  
-  filter {
-    name   = "group-id"
-    values = [aws_security_group.ec2_sg.id]
-  }
-  
-  filter {
-    name   = "description"
-    values = ["*com.amazonaws.${var.region}.s3*"]
-  }
-
-  depends_on = [aws_vpc_endpoint.s3_interface]
+# Get the network interface IDs directly from the VPC endpoint
+locals {
+  endpoint_eni_ids = aws_vpc_endpoint.s3_interface.network_interface_ids
 }
 
-# Get details for each network interface individually
-data "aws_network_interface" "s3_endpoint_eni" {
-  count = length(data.aws_network_interfaces.s3_endpoint_enis.ids)
-  id    = tolist(data.aws_network_interfaces.s3_endpoint_enis.ids)[count.index]
+# Get details for each network interface
+data "aws_network_interface" "s3_endpoint_enis" {
+  count = length(local.endpoint_eni_ids)
+  id    = local.endpoint_eni_ids[count.index]
 }
 
-# Dynamically create target group attachments for each endpoint ENI
+# Create target group attachments
 resource "aws_lb_target_group_attachment" "s3_endpoint_targets" {
-  count            = length(data.aws_network_interface.s3_endpoint_eni)
+  count            = length(data.aws_network_interface.s3_endpoint_enis)
   target_group_arn = aws_lb_target_group.tg.arn
-  target_id        = data.aws_network_interface.s3_endpoint_eni[count.index].private_ip
+  target_id        = data.aws_network_interface.s3_endpoint_enis[count.index].private_ip
   port             = 80
 }
 

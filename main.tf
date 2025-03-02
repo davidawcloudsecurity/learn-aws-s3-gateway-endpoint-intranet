@@ -63,17 +63,43 @@ resource "aws_subnet" "second_subnet" {
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
 }
-/* Remove s3 gateway endpoint
-resource "aws_vpc_endpoint" "s3" {
-  vpc_id       = aws_vpc.main.id
-  service_name = "com.amazonaws.${var.region}.s3"
-  route_table_ids   = [aws_route_table.rt.id] # This is where the association happens
 
-  tags = var.tags
+resource "aws_vpc_endpoint" "ssm_interface" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${var.region}.ssm"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
+  subnet_ids          = [aws_subnet.main.id, aws_subnet.second_subnet.id]
+  security_group_ids  = [aws_security_group.ec2_sg.id]
 
-  depends_on = [aws_vpc.main]  # Ensure VPC is created before the endpoint
+  tags       = var.tags
+  depends_on = [aws_vpc.main]
 }
-*/
+
+resource "aws_vpc_endpoint" "ssm_ec2" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${var.region}.ec2messages"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
+  subnet_ids          = [aws_subnet.main.id, aws_subnet.second_subnet.id]
+  security_group_ids  = [aws_security_group.ec2_sg.id]
+
+  tags       = var.tags
+  depends_on = [aws_vpc.main]
+}
+
+resource "aws_vpc_endpoint" "ssm_messages" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${var.region}.ssmmessages"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
+  subnet_ids          = [aws_subnet.main.id, aws_subnet.second_subnet.id]
+  security_group_ids  = [aws_security_group.ec2_sg.id]
+
+  tags       = var.tags
+  depends_on = [aws_vpc.main]
+}
+
 resource "aws_vpc_endpoint" "s3_interface" {
   vpc_id              = aws_vpc.main.id
   service_name        = "com.amazonaws.${var.region}.s3"
@@ -314,10 +340,11 @@ resource "aws_lb_listener" "http" {
 }
 
 resource "aws_lb_target_group" "tg" {
-  name     = "my-target-group"
-  port     = 80
-  protocol = "HTTP"
-  vpc_id   = aws_vpc.main.id
+  name        = "my-target-group"
+  port        = 80
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.main.id
+  target_type = "ip"
 
   health_check {
     path                = "/"
@@ -325,8 +352,32 @@ resource "aws_lb_target_group" "tg" {
     unhealthy_threshold = 3
     timeout             = 6
     interval            = 30
-    matcher             = "307,405" # Check for these status codes
+    matcher             = "307,405"
   }
+}
+
+resource "null_resource" "register_targets" {
+  triggers = {
+    endpoint_id = aws_vpc_endpoint.s3_interface.id
+  }
+
+  provisioner "local-exec" {
+    command = <<EOT
+      # Get ENI IDs for the VPC endpoint
+      ENI_IDS=$(aws ec2 describe-vpc-endpoints --vpc-endpoint-ids ${aws_vpc_endpoint.s3_interface.id} --query 'VpcEndpoints[0].NetworkInterfaceIds' --output text)
+      
+      # For each ENI, get the private IP and register it with the target group
+      for ENI_ID in $ENI_IDS; do
+        IP=$(aws ec2 describe-network-interfaces --network-interface-ids $ENI_ID --query 'NetworkInterfaces[0].PrivateIpAddress' --output text)
+        aws elbv2 register-targets --target-group-arn ${aws_lb_target_group.tg.arn} --targets Id=$IP,Port=80
+      done
+    EOT
+  }
+
+  depends_on = [
+    aws_vpc_endpoint.s3_interface,
+    aws_lb_target_group.tg
+  ]
 }
 
 resource "aws_lb_listener_rule" "trailing_slash_redirect" {
@@ -350,6 +401,15 @@ resource "aws_lb_listener_rule" "trailing_slash_redirect" {
       values = ["*/"]
     }
   }
+}
+
+# Create a private hosted zone using the same name as the S3 bucket
+resource "aws_route53_zone" "private_hosted_zone" {
+  name = aws_s3_bucket.static_website.bucket
+  vpc {
+    vpc_id = aws_vpc.main.id
+  }
+  tags = var.tags
 }
 
 output "s3_bucket_name" {

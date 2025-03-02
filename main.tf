@@ -161,8 +161,6 @@ resource "aws_instance" "windows_ec2" {
     <powershell>
     net user ssm-user2 P@ssword123 /add
     net localgroup Administrators ssm-user2 /add
-    Start-Process "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"
-    curl HTTP://${aws_s3_bucket.static_website.id}.
     </powershell>
   EOF
 
@@ -322,6 +320,14 @@ resource "aws_s3_object" "image_folder" {
   key          = "assets/${each.value}"
   source       = "assets/${each.value}"
   content_type = "image/png"
+}
+
+resource "aws_s3_object" "css_folder" {
+  for_each     = fileset("css/", "*.css") # Adjust this path
+  bucket       = aws_s3_bucket.static_website.id
+  key          = "css/${each.value}"
+  source       = "css/${each.value}"
+  content_type = "text/html"
 }
 
 # Update the ALB to use both subnets

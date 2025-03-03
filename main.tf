@@ -232,7 +232,10 @@ resource "aws_s3_bucket_policy" "allow_vpce_access" {
         Sid       = "AllowVPCEAccess"
         Effect    = "Allow"
         Principal = "*"
-        Action    = "s3:GetObject"
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket" # Added ListBucket to allow for error handling
+        ]
         Resource = [
           "${aws_s3_bucket.static_website.arn}/*",
           "${aws_s3_bucket.static_website.arn}"
@@ -293,6 +296,19 @@ resource "aws_s3_bucket_website_configuration" "static_website_configuration" {
   error_document {
     key = "error.html"
   }
+  # Add routing rules to handle specific error cases
+  routing_rules = jsonencode([
+    {
+      Condition = {
+        HttpErrorCodeReturnedEquals = "404"
+      }
+      Redirect = {
+        ReplaceKeyWith   = "error.html"
+        Protocol         = "https"
+        HttpRedirectCode = "302"
+      }
+    }
+  ])
 }
 
 # Upload index.html
@@ -352,6 +368,46 @@ resource "aws_lb_listener" "http" {
   }
 }
 
+# Fixed ALB listener rule that properly handles the error page content
+resource "aws_lb_listener_rule" "error_page_rule" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 200 # Higher number = lower priority than your other rule (100)
+
+  action {
+    type = "fixed-response"
+    fixed_response {
+      content_type = "text/html"
+      # Instead of trying to read the file directly, include a simplified error message
+      # or hardcode the HTML content here
+      message_body = <<EOF
+<!DOCTYPE html>
+<html>
+<head>
+    <title>404 - Not Found</title>
+    <meta charset="UTF-8">
+</head>
+<body style="font-family:sans-serif;text-align:center;background:#f7f7f7;padding:50px;">
+    <div style="max-width:400px;margin:auto;background:#fff;padding:20px;border-radius:8px;box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+        <h1 style="color:#dc2626;">404</h1>
+        <p>Oops! Page Not Found.</p>
+        <p>The page may have been removed or is temporarily unavailable.</p>
+        <a href="/" style="display:inline-block;background:#dc2626;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;">Home</a>
+        <button onclick="history.back()" style="background:#e5e7eb;color:#1f2937;padding:10px 20px;border:none;border-radius:6px;cursor:pointer;">Back</button>
+    </div>
+</body>
+</html>
+EOF
+      status_code  = "404"
+    }
+  }
+
+  condition {
+    path_pattern {
+      values = ["*"]
+    }
+  }
+}
+
 resource "aws_lb_target_group" "tg" {
   name        = "my-target-group"
   port        = 80
@@ -365,7 +421,7 @@ resource "aws_lb_target_group" "tg" {
     unhealthy_threshold = 3
     timeout             = 6
     interval            = 30
-    matcher             = "307,405"
+    matcher             = "200,307,404,405" # Added 200 and 404 to the matcher
   }
 }
 

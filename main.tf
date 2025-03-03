@@ -376,6 +376,22 @@ resource "aws_lb_listener" "http" {
   }
 }
 
+resource "aws_lb_listener_rule" "path_based_routing" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 150
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.tg.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/index.html", "/css/*", "/assets/*"]
+    }
+  }
+}
+
 # Fixed ALB listener rule that properly handles the error page content
 resource "aws_lb_listener_rule" "error_page_rule" {
   listener_arn = aws_lb_listener.http.arn

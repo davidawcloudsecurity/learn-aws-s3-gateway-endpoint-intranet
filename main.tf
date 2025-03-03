@@ -232,7 +232,10 @@ resource "aws_s3_bucket_policy" "allow_vpce_access" {
         Sid       = "AllowVPCEAccess"
         Effect    = "Allow"
         Principal = "*"
-        Action    = "s3:GetObject"
+        Action    = [
+          "s3:GetObject",
+          "s3:ListBucket" # Added ListBucket to allow for error handling
+        ]
         Resource  = [
           "${aws_s3_bucket.static_website.arn}/*",
           "${aws_s3_bucket.static_website.arn}"
@@ -457,34 +460,6 @@ resource "aws_route53_zone" "private_hosted_zone" {
     vpc_id = aws_vpc.main.id
   }
   tags = var.tags
-}
-
-# Add custom bucket policy to allow error documents to be served via VPC endpoint
-resource "aws_s3_bucket_policy" "allow_vpce_access" {
-  bucket = aws_s3_bucket.static_website.id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid       = "AllowVPCEAccess"
-        Effect    = "Allow"
-        Principal = "*"
-        Action    = [
-          "s3:GetObject",
-          "s3:ListBucket" # Added ListBucket to allow for error handling
-        ]
-        Resource  = [
-          "${aws_s3_bucket.static_website.arn}/*",
-          "${aws_s3_bucket.static_website.arn}"
-        ]
-        Condition = {
-          StringEquals = {
-            "aws:sourceVpce" = aws_vpc_endpoint.s3_interface.id
-          }
-        }
-      },
-    ]
-  })
 }
 
 resource "aws_route53_record" "alias" {

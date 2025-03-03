@@ -385,25 +385,19 @@ resource "aws_lb_listener_rule" "error_page_rule" {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Error - Page Not Found</title>
+    <title>404 - Not Found</title>
 </head>
-<body style="font-family: Arial, sans-serif; background-color: #f7f7f7; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; padding: 20px;">
-    <div style="max-width: 600px; background-color: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-        <div style="background-color: #dc2626; padding: 30px 20px; text-align: center;">
-            <h1 style="color: white; font-size: 48px; margin: 0 0 10px 0;">404</h1>
-            <p style="color: #fee2e2; font-size: 20px; margin: 0;">Oops! Page Not Found</p>
+<body style="font-family: Arial, sans-serif; background: #f7f7f7; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
+    <div style="max-width: 600px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center;">
+        <div style="background: #dc2626; padding: 30px;">
+            <h1 style="color: white; margin: 0;">404</h1>
+            <p style="color: #fee2e2;">Oops! Page Not Found</p>
         </div>
         <div style="padding: 30px;">
-            <div style="text-align: center; margin-bottom: 30px;">
-                <h2 style="font-size: 24px; color: #1f2937; margin-bottom: 15px;">We couldn't find the page you're looking for</h2>
-                <p style="color: #4b5563; margin-bottom: 20px;">
-                    The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
-                </p>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
-                <a href="/" style="display: inline-block; background-color: #dc2626; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">Return Home</a>
-                <button onclick="history.back()" style="background-color: #e5e7eb; color: #1f2937; padding: 10px 20px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer;">Go Back</button>
-            </div>
+            <h2 style="color: #1f2937;">Page Not Found</h2>
+            <p style="color: #4b5563;">It might have been removed or is temporarily unavailable.</p>
+            <a href="/" style="background: #dc2626; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none;">Return Home</a>
+            <button onclick="history.back()" style="background: #e5e7eb; color: #1f2937; padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer;">Go Back</button>
         </div>
     </div>
 </body>

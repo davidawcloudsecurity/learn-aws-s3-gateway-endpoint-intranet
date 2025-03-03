@@ -338,12 +338,20 @@ resource "aws_s3_object" "image_folder" {
   content_type = "image/png"
 }
 
-resource "aws_s3_object" "css_folder" {
-  for_each = fileset("css/", "*.css") # Adjust this path
-  bucket   = aws_s3_bucket.static_website.id
-  key      = "css/${each.value}"
-  source   = "css/${each.value}"
-  content_type = "text/html"
+# Null resource to download the CSS file
+resource "null_resource" "download_tailwind_css" {
+  provisioner "local-exec" {
+    command = "curl -LO https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css"
+  }
+}
+
+# Updated S3 object resource to use the downloaded CSS file
+resource "aws_s3_object" "tailwind_css" {
+  depends_on = [null_resource.download_tailwind_css]
+  bucket     = aws_s3_bucket.static_website.id
+  key        = "css/tailwind.min.css"
+  source     = "tailwind.min.css"
+  content_type = "text/css"
 }
 
 # Update the ALB to use both subnets

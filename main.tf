@@ -381,24 +381,18 @@ resource "aws_lb_listener_rule" "error_page_rule" {
       # or hardcode the HTML content here
       message_body = <<EOF
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 - Not Found</title>
+    <meta charset="UTF-8">
 </head>
-<body style="font-family: Arial, sans-serif; background: #f7f7f7; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
-    <div style="max-width: 600px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center;">
-        <div style="background: #dc2626; padding: 30px;">
-            <h1 style="color: white; margin: 0;">404</h1>
-            <p style="color: #fee2e2;">Oops! Page Not Found</p>
-        </div>
-        <div style="padding: 30px;">
-            <h2 style="color: #1f2937;">Page Not Found</h2>
-            <p style="color: #4b5563;">It might have been removed or is temporarily unavailable.</p>
-            <a href="/" style="background: #dc2626; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none;">Return Home</a>
-            <button onclick="history.back()" style="background: #e5e7eb; color: #1f2937; padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer;">Go Back</button>
-        </div>
+<body style="font-family:sans-serif;text-align:center;background:#f7f7f7;padding:50px;">
+    <div style="max-width:400px;margin:auto;background:#fff;padding:20px;border-radius:8px;box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+        <h1 style="color:#dc2626;">404</h1>
+        <p>Oops! Page Not Found.</p>
+        <p>The page may have been removed or is temporarily unavailable.</p>
+        <a href="/" style="display:inline-block;background:#dc2626;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;">Home</a>
+        <button onclick="history.back()" style="background:#e5e7eb;color:#1f2937;padding:10px 20px;border:none;border-radius:6px;cursor:pointer;">Back</button>
     </div>
 </body>
 </html>

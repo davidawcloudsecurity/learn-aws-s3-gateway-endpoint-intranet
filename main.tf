@@ -293,6 +293,19 @@ resource "aws_s3_bucket_website_configuration" "static_website_configuration" {
   error_document {
     key = "error.html"
   }
+  # Add routing rules to handle specific error cases
+  routing_rules = jsonencode([
+    {
+      Condition = {
+        HttpErrorCodeReturnedEquals = "404"
+      }
+      Redirect = {
+        ReplaceKeyWith = "error.html"
+        Protocol       = "https"
+        HttpRedirectCode = "302"
+      }
+    }
+  ])
 }
 
 # Upload index.html
@@ -352,6 +365,27 @@ resource "aws_lb_listener" "http" {
   }
 }
 
+# Add a default listener rule with lower priority to handle non-matching paths
+resource "aws_lb_listener_rule" "error_page_rule" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 200 # Higher number = lower priority than your other rule (100)
+
+  action {
+    type = "fixed-response"
+    fixed_response {
+      content_type = "text/html"
+      message_body = file("./error.html") # Reads content from your error.html file
+      status_code  = "404"
+    }
+  }
+
+  condition {
+    path_pattern {
+      values = ["*"]
+    }
+  }
+}
+
 resource "aws_lb_target_group" "tg" {
   name        = "my-target-group"
   port        = 80
@@ -365,7 +399,7 @@ resource "aws_lb_target_group" "tg" {
     unhealthy_threshold = 3
     timeout             = 6
     interval            = 30
-    matcher             = "307,405"
+    matcher             = "200,307,404,405" # Added 200 and 404 to the matcher
   }
 }
 
@@ -423,6 +457,34 @@ resource "aws_route53_zone" "private_hosted_zone" {
     vpc_id = aws_vpc.main.id
   }
   tags = var.tags
+}
+
+# Add custom bucket policy to allow error documents to be served via VPC endpoint
+resource "aws_s3_bucket_policy" "allow_vpce_access" {
+  bucket = aws_s3_bucket.static_website.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "AllowVPCEAccess"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = [
+          "s3:GetObject",
+          "s3:ListBucket" # Added ListBucket to allow for error handling
+        ]
+        Resource  = [
+          "${aws_s3_bucket.static_website.arn}/*",
+          "${aws_s3_bucket.static_website.arn}"
+        ]
+        Condition = {
+          StringEquals = {
+            "aws:sourceVpce" = aws_vpc_endpoint.s3_interface.id
+          }
+        }
+      },
+    ]
+  })
 }
 
 resource "aws_route53_record" "alias" {

@@ -286,6 +286,7 @@ resource "aws_s3_bucket_acl" "example" {
   acl    = "private"
 }
 
+/* Remove
 resource "aws_s3_bucket_website_configuration" "static_website_configuration" {
   bucket = aws_s3_bucket.static_website.bucket
 
@@ -303,13 +304,14 @@ resource "aws_s3_bucket_website_configuration" "static_website_configuration" {
         HttpErrorCodeReturnedEquals = "404"
       }
       Redirect = {
-        ReplaceKeyWith   = "error.html"
-        Protocol         = "https"
+        ReplaceKeyWith = "error.html"
+        Protocol       = "http"
         HttpRedirectCode = "302"
       }
     }
   ])
 }
+*/
 
 # Upload index.html
 resource "aws_s3_object" "index" {

@@ -171,11 +171,11 @@ resource "aws_iam_instance_profile" "ec2_profile" {
 }
 
 # Create an IAM instance profile with the specified role
-resource "aws_iam_instance_profile" "ec2_profile" {
-  count = data.aws_iam_instance_profile.ec2_profile.arn == "" ? 1 : 0
-  name = "ec2_instance_profile"
-  role = "AmazonSSMManagedInstanceCore"
-}
+# resource "aws_iam_instance_profile" "ec2_profile" {
+#   count = data.aws_iam_instance_profile.ec2_profile.arn == "" ? 1 : 0
+#   name = "ec2_instance_profile"
+#   role = "AmazonSSMManagedInstanceCore"
+# }
 
 # EC2 Instance
 resource "aws_instance" "windows_ec2" {

@@ -179,7 +179,7 @@ resource "aws_iam_instance_profile" "ec2_profile" {
 
 # EC2 Instance
 resource "aws_instance" "windows_ec2" {
-  ami           = "ami-001adaa5c3ee02e10" # Windows AMI
+  ami           = "ami-0345f44fe05216fc4" # Windows AMI
   instance_type = "t2.micro" # You might want to adjust this based on your needs
   subnet_id     = aws_subnet.main.id
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]

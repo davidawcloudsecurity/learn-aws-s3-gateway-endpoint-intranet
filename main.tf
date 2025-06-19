@@ -137,8 +137,37 @@ resource "aws_route_table_association" "second_subnet_association" {
   route_table_id = aws_route_table.rt.id
 }
 
-data "aws_iam_instance_profile" "ec2_profile" {
+# data "aws_iam_instance_profile" "ec2_profile" {
+#   name = "ec2_instance_profile"
+# }
+
+# IAM assume role policy for EC2
+data "aws_iam_policy_document" "ec2_assume_role_policy" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+  }
+}
+
+# IAM role for EC2
+resource "aws_iam_role" "ec2_role" {
+  name               = "ec2_instance_profile_role"
+  assume_role_policy = data.aws_iam_policy_document.ec2_assume_role_policy.json
+}
+
+# Attach SSM policy to the role
+resource "aws_iam_role_policy_attachment" "ssm_attach" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+# Instance profile
+resource "aws_iam_instance_profile" "ec2_profile" {
   name = "ec2_instance_profile"
+  role = aws_iam_role.ec2_role.name
 }
 
 # Create an IAM instance profile with the specified role
@@ -154,7 +183,8 @@ resource "aws_instance" "windows_ec2" {
   instance_type = "t2.micro" # You might want to adjust this based on your needs
   subnet_id     = aws_subnet.main.id
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
-  iam_instance_profile   = length(aws_iam_instance_profile.ec2_profile) > 0 ? aws_iam_instance_profile.ec2_profile[0].name : data.aws_iam_instance_profile.ec2_profile.name
+  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
+  # iam_instance_profile   = length(aws_iam_instance_profile.ec2_profile) > 0 ? aws_iam_instance_profile.ec2_profile[0].name : data.aws_iam_instance_profile.ec2_profile.name
   associate_public_ip_address = false  # This ensures the instance gets a public IP
 
   user_data = <<-EOF

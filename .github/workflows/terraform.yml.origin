@@ -1,0 +1,80 @@
+name: "learn-s3-gateway-endpoint-intranet"
+
+on:
+  # push:
+  workflow_dispatch:
+
+env:
+  # verbosity setting for Terraform logs
+  TF_LOG: INFO
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_POC }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_POC }}
+  AWS_DEFAULT_REGION: "us-east-1"
+
+jobs:
+  terraform:
+    name: "learn-aws-s3-gateway-endpoint-intranet"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.3.0
+
+      - name: Initialize, Format, Validate and Plan Terraform
+        run: |
+          terraform init
+          terraform fmt
+          terraform validate
+          terraform plan
+
+      - name: Apply Terraform configuration
+        run: |
+          terraform apply -auto-approve
+
+      - name: Git Config
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/davidawcloudsecurity/learn-aws-s3-gateway-endpoint-intranet.git                   
+          # Get the latest commit hash
+          COMMIT_HASH=$(git rev-parse --short HEAD)          
+          
+          # Fetch the latest changes from the remote 'destroy/main' branch
+          echo "git fetch"
+          git fetch origin destroy/main
+          git add main.tf
+          git commit -m "random-${COMMIT_HASH}"
+          cp main.tf main.tf.origin
+          echo "git checkout"
+          git checkout destroy/main
+          echo "git merge"
+          git merge origin/destroy/main
+          mv main.tf.origin main.tf
+          mv terraform.tfstate state
+          git add state main.tf
+          git commit -m "random-${COMMIT_HASH}"
+          # Push the changes to the 'destroy/main' branch
+          git push origin destroy/main
+          
+      - name: Terraform Destroy on Failure
+        if: failure()
+        run: |
+          terraform destroy -auto-approve
+          echo "Check if AmazonSSMManagedInstanceRole exist"
+          if [ -n "$(aws iam list-roles --query 'Roles[*].RoleName' | grep AmazonSSMManagedInstanceRole | sed 's/[",]//g')" ]; then
+            aws iam delete-role --role-name $(aws iam list-roles --query 'Roles[*].RoleName' | grep AmazonSSMManagedInstanceRole | sed 's/[",]//g')
+          fi
+          echo "Check if AmazonSSMManagedInstanceProfile exist"
+          if [ -n "$(aws iam list-instance-profiles --query InstanceProfiles[*].InstanceProfileName | grep AmazonSSMManagedInstanceProfile | sed 's/[",]//g')" ]; then
+            aws iam delete-instance-profile --instance-profile-name $(aws iam list-instance-profiles --query InstanceProfiles[*].InstanceProfileName | grep AmazonSSMManagedInstanceProfile | sed 's/[",]//g')
+          fi
